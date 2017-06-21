@@ -1,13 +1,10 @@
 package io.github.controlwear.virtual.joystick.android;
 
-
 import android.content.Context;
 import android.content.res.TypedArray;
-import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
-import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.Handler;
 import android.util.AttributeSet;
@@ -108,9 +105,7 @@ public class JoystickView extends View
     private Paint mPaintCircleBorder;
     private Paint mPaintBackground;
 
-    private Paint mPaintBitmapButton;
-    private Bitmap mButtonBitmap;
-
+    private Drawable mButtonDrawable;
 
     /**
      * Ratio use to define the size of the button
@@ -177,7 +172,6 @@ public class JoystickView extends View
     private Runnable mRunnableMultipleLongPress;
     private int mMoveTolerance;
 
-
     /*
     CONSTRUCTORS
      */
@@ -220,7 +214,6 @@ public class JoystickView extends View
         int borderColor;
         int backgroundColor;
         int borderWidth;
-        Drawable buttonDrawable;
         try {
             buttonColor = styledAttributes.getColor(R.styleable.JoystickView_JV_buttonColor, DEFAULT_COLOR_BUTTON);
             borderColor = styledAttributes.getColor(R.styleable.JoystickView_JV_borderColor, DEFAULT_COLOR_BORDER);
@@ -228,7 +221,7 @@ public class JoystickView extends View
             borderWidth = styledAttributes.getDimensionPixelSize(R.styleable.JoystickView_JV_borderWidth, DEFAULT_WIDTH_BORDER);
             mFixedCenter = styledAttributes.getBoolean(R.styleable.JoystickView_JV_fixedCenter, DEFAULT_FIXED_CENTER);
             mAutoReCenterButton = styledAttributes.getBoolean(R.styleable.JoystickView_JV_autoReCenterButton, DEFAULT_AUTO_RECENTER_BUTTON);
-            buttonDrawable = styledAttributes.getDrawable(R.styleable.JoystickView_JV_buttonImage);
+            mButtonDrawable = styledAttributes.getDrawable(R.styleable.JoystickView_JV_buttonImage);
             mEnabled = styledAttributes.getBoolean(R.styleable.JoystickView_JV_enabled, true);
             mButtonSizeRatio = styledAttributes.getFraction(R.styleable.JoystickView_JV_buttonSizeRatio, 1, 1, 0.25f);
             mBackgroundSizeRatio = styledAttributes.getFraction(R.styleable.JoystickView_JV_backgroundSizeRatio, 1, 1, 0.75f);
@@ -242,13 +235,6 @@ public class JoystickView extends View
         mPaintCircleButton.setAntiAlias(true);
         mPaintCircleButton.setColor(buttonColor);
         mPaintCircleButton.setStyle(Paint.Style.FILL);
-
-        if (buttonDrawable != null) {
-            if (buttonDrawable instanceof BitmapDrawable) {
-                mButtonBitmap = ((BitmapDrawable) buttonDrawable).getBitmap();
-                mPaintBitmapButton = new Paint();
-            }
-        }
 
         mPaintCircleBorder = new Paint();
         mPaintCircleBorder.setAntiAlias(true);
@@ -294,13 +280,11 @@ public class JoystickView extends View
         canvas.drawCircle(mFixedCenterX, mFixedCenterY, mBorderRadius, mPaintCircleBorder);
 
         // Draw the button from image
-        if (mButtonBitmap != null) {
-            canvas.drawBitmap(
-                    mButtonBitmap,
-                    mPosX + mFixedCenterX - mCenterX - mButtonRadius,
-                    mPosY + mFixedCenterY - mCenterY - mButtonRadius,
-                    mPaintBitmapButton
-            );
+        if (mButtonDrawable != null) {
+            int x = mPosX + mFixedCenterX - mCenterX - mButtonRadius;
+            int y = mPosY + mFixedCenterY - mCenterY - mButtonRadius;
+            mButtonDrawable.setBounds(x, y, x + mButtonRadius * 2, y + mButtonRadius * 2);
+            mButtonDrawable.draw(canvas);
         }
         // Draw the button as simple circle
         else {
@@ -334,8 +318,6 @@ public class JoystickView extends View
         mButtonRadius = (int) (d / 2 * mButtonSizeRatio);
         mBorderRadius = (int) (d / 2 * mBackgroundSizeRatio);
 
-        if (mButtonBitmap != null)
-            mButtonBitmap = Bitmap.createScaledBitmap(mButtonBitmap, mButtonRadius * 2, mButtonRadius * 2, false);
     }
 
 
@@ -378,12 +360,11 @@ public class JoystickView extends View
             return true;
         }
 
-
         // to move the button according to the finger coordinate
         mPosX = (int) event.getX();
         mPosY = (int) event.getY();
 
-        if (event.getAction() == MotionEvent.ACTION_UP) {
+        if (event.getAction() == MotionEvent.ACTION_UP || event.getAction() == MotionEvent.ACTION_CANCEL) {
             // re-center the button or not (depending on settings)
             if (mAutoReCenterButton)
                 resetButtonPosition();
@@ -539,24 +520,8 @@ public class JoystickView extends View
      * @param d drawable to pick the image
      */
     public void setButtonDrawable(Drawable d) {
-        if (d != null) {
-            if (d instanceof BitmapDrawable) {
-                mButtonBitmap = ((BitmapDrawable) d).getBitmap();
-
-                if (mButtonRadius != 0) {
-                    mButtonBitmap = Bitmap.createScaledBitmap(
-                            mButtonBitmap,
-                            mButtonRadius * 2,
-                            mButtonRadius * 2,
-                            false);
-                }
-
-                if (mPaintBitmapButton != null)
-                    mPaintBitmapButton = new Paint();
-            }
-        }
+        mButtonDrawable = d;
     }
-
 
     /**
      * Set the button color for this JoystickView.
@@ -648,6 +613,12 @@ public class JoystickView extends View
      */
     public void setEnabled(boolean enabled) {
         mEnabled = enabled;
+
+
+        int[] state = new int[] {enabled ? android.R.attr.state_enabled : -android.R.attr.state_enabled};
+        mButtonDrawable.setState(state);
+        resetButtonPosition();
+        invalidate();
     }
 
 
