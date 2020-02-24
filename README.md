@@ -1,5 +1,7 @@
 # virtual-joystick-android
 
+[![](https://jitpack.io/v/BenDelGreco/virtual-joystick-android.svg)](https://jitpack.io/#BenDelGreco/virtual-joystick-android)
+
 **v1.10.1** _(New version - [support custom images](#image), button & background size, limited direction, normalized coordinate, alpha border)_
 
 _I created this very simple library as a learning process and I have been inspired by this project [JoystickView](https://github.com/zerokol/JoystickView) (the author is a genius!)_
