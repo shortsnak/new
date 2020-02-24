@@ -188,7 +188,7 @@ public class JoystickView extends View
      */
     private float mBackgroundRadius;
         
-    private MotionEvent event;
+    private MotionEvent mEvent;
 
     /**
      * Listener used to dispatch OnMove event
@@ -427,7 +427,7 @@ public class JoystickView extends View
      */
     @Override
     public boolean onTouchEvent(MotionEvent event) {
-        this.event = event;
+        mEvent = event;
         // if disabled we don't move the
         if (!mEnabled) {
             return true;
@@ -859,7 +859,7 @@ public class JoystickView extends View
             post(new Runnable() {
                 public void run() {
                     if (mCallback != null)
-                        mCallback.onMove(getAngle(), getStrength(), this.event);
+                        mCallback.onMove(getAngle(), getStrength(), mEvent);
                 }
             });
 
