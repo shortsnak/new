@@ -15,9 +15,7 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewConfiguration;
 
-public class JoystickView extends View
-        implements
-        Runnable {
+public class JoystickView extends View {
 
 
     /*
@@ -195,7 +193,7 @@ public class JoystickView extends View
     private OnMoveListener mCallback;
 
     private long mLoopInterval = DEFAULT_LOOP_INTERVAL;
-    private Thread mThread = new Thread(this);
+//    private Thread mThread = new Thread(this);
 
 
     /**
@@ -257,7 +255,7 @@ public class JoystickView extends View
 
         TypedArray styledAttributes = context.getTheme().obtainStyledAttributes(
                 attrs,
-                R.styleable.JoystickView,
+                io.github.controlwear.virtual.joystick.android.R.styleable.JoystickView,
                 0, 0
         );
 
@@ -267,19 +265,19 @@ public class JoystickView extends View
         int borderWidth;
         Drawable buttonDrawable;
         try {
-            buttonColor = styledAttributes.getColor(R.styleable.JoystickView_JV_buttonColor, DEFAULT_COLOR_BUTTON);
-            borderColor = styledAttributes.getColor(R.styleable.JoystickView_JV_borderColor, DEFAULT_COLOR_BORDER);
-            mBorderAlpha = styledAttributes.getInt(R.styleable.JoystickView_JV_borderAlpha, DEFAULT_ALPHA_BORDER);
-            backgroundColor = styledAttributes.getColor(R.styleable.JoystickView_JV_backgroundColor, DEFAULT_BACKGROUND_COLOR);
-            borderWidth = styledAttributes.getDimensionPixelSize(R.styleable.JoystickView_JV_borderWidth, DEFAULT_WIDTH_BORDER);
-            mFixedCenter = styledAttributes.getBoolean(R.styleable.JoystickView_JV_fixedCenter, DEFAULT_FIXED_CENTER);
-            mAutoReCenterButton = styledAttributes.getBoolean(R.styleable.JoystickView_JV_autoReCenterButton, DEFAULT_AUTO_RECENTER_BUTTON);
-            mButtonStickToBorder = styledAttributes.getBoolean(R.styleable.JoystickView_JV_buttonStickToBorder, DEFAULT_BUTTON_STICK_TO_BORDER);
-            buttonDrawable = styledAttributes.getDrawable(R.styleable.JoystickView_JV_buttonImage);
-            mEnabled = styledAttributes.getBoolean(R.styleable.JoystickView_JV_enabled, true);
-            mButtonSizeRatio = styledAttributes.getFraction(R.styleable.JoystickView_JV_buttonSizeRatio, 1, 1, 0.25f);
-            mBackgroundSizeRatio = styledAttributes.getFraction(R.styleable.JoystickView_JV_backgroundSizeRatio, 1, 1, 0.75f);
-            mButtonDirection = styledAttributes.getInteger(R.styleable.JoystickView_JV_buttonDirection, BUTTON_DIRECTION_BOTH);
+            buttonColor = styledAttributes.getColor(io.github.controlwear.virtual.joystick.android.R.styleable.JoystickView_JV_buttonColor, DEFAULT_COLOR_BUTTON);
+            borderColor = styledAttributes.getColor(io.github.controlwear.virtual.joystick.android.R.styleable.JoystickView_JV_borderColor, DEFAULT_COLOR_BORDER);
+            mBorderAlpha = styledAttributes.getInt(io.github.controlwear.virtual.joystick.android.R.styleable.JoystickView_JV_borderAlpha, DEFAULT_ALPHA_BORDER);
+            backgroundColor = styledAttributes.getColor(io.github.controlwear.virtual.joystick.android.R.styleable.JoystickView_JV_backgroundColor, DEFAULT_BACKGROUND_COLOR);
+            borderWidth = styledAttributes.getDimensionPixelSize(io.github.controlwear.virtual.joystick.android.R.styleable.JoystickView_JV_borderWidth, DEFAULT_WIDTH_BORDER);
+            mFixedCenter = styledAttributes.getBoolean(io.github.controlwear.virtual.joystick.android.R.styleable.JoystickView_JV_fixedCenter, DEFAULT_FIXED_CENTER);
+            mAutoReCenterButton = styledAttributes.getBoolean(io.github.controlwear.virtual.joystick.android.R.styleable.JoystickView_JV_autoReCenterButton, DEFAULT_AUTO_RECENTER_BUTTON);
+            mButtonStickToBorder = styledAttributes.getBoolean(io.github.controlwear.virtual.joystick.android.R.styleable.JoystickView_JV_buttonStickToBorder, DEFAULT_BUTTON_STICK_TO_BORDER);
+            buttonDrawable = styledAttributes.getDrawable(io.github.controlwear.virtual.joystick.android.R.styleable.JoystickView_JV_buttonImage);
+            mEnabled = styledAttributes.getBoolean(io.github.controlwear.virtual.joystick.android.R.styleable.JoystickView_JV_enabled, true);
+            mButtonSizeRatio = styledAttributes.getFraction(io.github.controlwear.virtual.joystick.android.R.styleable.JoystickView_JV_buttonSizeRatio, 1, 1, 0.25f);
+            mBackgroundSizeRatio = styledAttributes.getFraction(io.github.controlwear.virtual.joystick.android.R.styleable.JoystickView_JV_backgroundSizeRatio, 1, 1, 0.75f);
+            mButtonDirection = styledAttributes.getInteger(io.github.controlwear.virtual.joystick.android.R.styleable.JoystickView_JV_buttonDirection, BUTTON_DIRECTION_BOTH);
         } finally {
             styledAttributes.recycle();
         }
@@ -437,10 +435,11 @@ public class JoystickView extends View
         mPosY = mButtonDirection < 0 ? mCenterY : (int) event.getY(); // direction negative is horizontal axe
         mPosX = mButtonDirection > 0 ? mCenterX : (int) event.getX(); // direction positive is vertical axe
 
+        // up
         if (event.getAction() == MotionEvent.ACTION_UP) {
 
             // stop listener because the finger left the touch screen
-            mThread.interrupt();
+//            mThread.interrupt();
 
             // re-center the button or not (depending on settings)
             if (mAutoReCenterButton) {
@@ -455,17 +454,20 @@ public class JoystickView extends View
             // later only after processing new position X and Y otherwise it could be above the border limit
         }
 
-        if (event.getAction() == MotionEvent.ACTION_DOWN) {
-            if (mThread != null && mThread.isAlive()) {
-                mThread.interrupt();
-            }
 
-            mThread = new Thread(this);
-            mThread.start();
+        // down
+        if (event.getAction() == MotionEvent.ACTION_DOWN) {
+//            if (mThread != null && mThread.isAlive()) {
+//                mThread.interrupt();
+//            }
+
+//            mThread = new Thread(this);
+//            mThread.start();
 
             if (mCallback != null)
                 mCallback.onMove(getAngle(), getStrength());
         }
+
 
         // handle first touch and long press with multiple touch only
         switch (event.getActionMasked()) {
@@ -491,6 +493,9 @@ public class JoystickView extends View
                 if (mMoveTolerance == 0) {
                     mHandlerMultipleLongPress.removeCallbacks(mRunnableMultipleLongPress);
                 }
+
+                if (mCallback != null)
+                    mCallback.onMove(getAngle(), getStrength());
                 break;
 
             case MotionEvent.ACTION_POINTER_UP: {
@@ -851,21 +856,21 @@ public class JoystickView extends View
      */
 
 
-    @Override // Runnable
-    public void run() {
-        while (!Thread.interrupted()) {
-            post(new Runnable() {
-                public void run() {
-                    if (mCallback != null)
-                        mCallback.onMove(getAngle(), getStrength());
-                }
-            });
-
-            try {
-                Thread.sleep(mLoopInterval);
-            } catch (InterruptedException e) {
-                break;
-            }
-        }
-    }
+//    @Override // Runnable
+//    public void run() {
+//        while (!Thread.interrupted()) {
+//            post(new Runnable() {
+//                public void run() {
+//                    if (mCallback != null)
+//                        mCallback.onMove(getAngle(), getStrength());
+//                }
+//            });
+//
+//            try {
+//                Thread.sleep(mLoopInterval);
+//            } catch (InterruptedException e) {
+//                break;
+//            }
+//        }
+//    }
 }

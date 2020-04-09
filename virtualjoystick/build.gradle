@@ -36,7 +36,7 @@ ext {
     artifact = 'virtualjoystick'
 
     libraryDescription = 'This library provides a very simple and ready-to-use custom view which emulates a joystick for Android.'
-    libraryVersion = '1.10.1'
+    libraryVersion = '1.10.2'
 
     developerId = 'makowildcat'
     developerName = 'Damien Brun'
