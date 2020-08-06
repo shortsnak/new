@@ -33,10 +33,10 @@ public class JoystickView extends View
 
         /**
          * Called when a JoystickView's button has been moved
-         * @param angle current angle
-         * @param strength current strength
+         * @param delX Displacement along the x axis relative to the center. Between -100 and 100.
+         * @param delY Displacement along the y axis relative to the center. Between -100 and 100.
          */
-        void onMove(int angle, int strength);
+        void onMove(int delX, int delY);
     }
 
 
@@ -116,7 +116,7 @@ public class JoystickView extends View
 
     // DRAWING
     private Paint mPaintCircleButton;
-    private Paint mPaintCircleBorder;
+    private Paint mPaintBorder;
     private Paint mPaintBackground;
 
     private Paint mPaintBitmapButton;
@@ -159,13 +159,6 @@ public class JoystickView extends View
 
 
     /**
-     * Used to adapt behavior whether the button is stick to border (true) or
-     * could be anywhere (when false - similar to regular behavior)
-     */
-    private boolean mButtonStickToBorder;
-
-
-    /**
      * Used to enabled/disabled the Joystick. When disabled (enabled to false) the joystick button
      * can't move and onMove is not called.
      */
@@ -174,7 +167,7 @@ public class JoystickView extends View
 
     // SIZE
     private int mButtonRadius;
-    private int mBorderRadius;
+    private int mBorderWidth, mBorderHeight;
 
 
     /**
@@ -184,9 +177,9 @@ public class JoystickView extends View
 
 
     /**
-     * Based on mBorderRadius but a bit smaller (minus half the stroke size of the border)
+     * Based on mBorderWidth/Height but a bit smaller (minus half the stroke size of the border)
      */
-    private float mBackgroundRadius;
+    private float mBackgroundWidth, mBackgroundHeight;
 
 
     /**
@@ -274,7 +267,6 @@ public class JoystickView extends View
             borderWidth = styledAttributes.getDimensionPixelSize(R.styleable.JoystickView_JV_borderWidth, DEFAULT_WIDTH_BORDER);
             mFixedCenter = styledAttributes.getBoolean(R.styleable.JoystickView_JV_fixedCenter, DEFAULT_FIXED_CENTER);
             mAutoReCenterButton = styledAttributes.getBoolean(R.styleable.JoystickView_JV_autoReCenterButton, DEFAULT_AUTO_RECENTER_BUTTON);
-            mButtonStickToBorder = styledAttributes.getBoolean(R.styleable.JoystickView_JV_buttonStickToBorder, DEFAULT_BUTTON_STICK_TO_BORDER);
             buttonDrawable = styledAttributes.getDrawable(R.styleable.JoystickView_JV_buttonImage);
             mEnabled = styledAttributes.getBoolean(R.styleable.JoystickView_JV_enabled, true);
             mButtonSizeRatio = styledAttributes.getFraction(R.styleable.JoystickView_JV_buttonSizeRatio, 1, 1, 0.25f);
@@ -298,14 +290,14 @@ public class JoystickView extends View
             }
         }
 
-        mPaintCircleBorder = new Paint();
-        mPaintCircleBorder.setAntiAlias(true);
-        mPaintCircleBorder.setColor(borderColor);
-        mPaintCircleBorder.setStyle(Paint.Style.STROKE);
-        mPaintCircleBorder.setStrokeWidth(borderWidth);
+        mPaintBorder = new Paint();
+        mPaintBorder.setAntiAlias(true);
+        mPaintBorder.setColor(borderColor);
+        mPaintBorder.setStyle(Paint.Style.STROKE);
+        mPaintBorder.setStrokeWidth(borderWidth);
 
         if (borderColor != Color.TRANSPARENT) {
-            mPaintCircleBorder.setAlpha(mBorderAlpha);
+            mPaintBorder.setAlpha(mBorderAlpha);
         }
 
         mPaintBackground = new Paint();
@@ -340,10 +332,10 @@ public class JoystickView extends View
     @Override
     protected void onDraw(Canvas canvas) {
         // Draw the background
-        canvas.drawCircle(mFixedCenterX, mFixedCenterY, mBackgroundRadius, mPaintBackground);
+        canvas.drawRect(mFixedCenterX - mBackgroundWidth/2, mFixedCenterY - mBackgroundHeight/2,mFixedCenterX + mBackgroundWidth/2, mFixedCenterY + mBackgroundHeight/2, mPaintBackground);
 
         // Draw the circle border
-        canvas.drawCircle(mFixedCenterX, mFixedCenterY, mBorderRadius, mPaintCircleBorder);
+        canvas.drawRect(mFixedCenterX - mBorderWidth/2, mFixedCenterY - mBorderHeight/2,mFixedCenterX + mBorderWidth/2, mFixedCenterY + mBorderHeight/2, mPaintBorder);
 
         // Draw the button from image
         if (mButtonBitmap != null) {
@@ -384,8 +376,10 @@ public class JoystickView extends View
         // radius based on smallest size : height OR width
         int d = Math.min(w, h);
         mButtonRadius = (int) (d / 2 * mButtonSizeRatio);
-        mBorderRadius = (int) (d / 2 * mBackgroundSizeRatio);
-        mBackgroundRadius = mBorderRadius - (mPaintCircleBorder.getStrokeWidth() / 2);
+        mBorderWidth  = (int) (w * mBackgroundSizeRatio);
+        mBorderHeight = (int) (h * mBackgroundSizeRatio);
+        mBackgroundWidth = mBorderWidth - (mPaintBorder.getStrokeWidth() / 2);
+        mBackgroundHeight = mBorderHeight - (mPaintBorder.getStrokeWidth() / 2);
 
         if (mButtonBitmap != null)
             mButtonBitmap = Bitmap.createScaledBitmap(mButtonBitmap, mButtonRadius * 2, mButtonRadius * 2, true);
@@ -448,7 +442,7 @@ public class JoystickView extends View
 
                 // update now the last strength and angle which should be zero after resetButton
                 if (mCallback != null)
-                    mCallback.onMove(getAngle(), getStrength());
+                    mCallback.onMove(getDelX(), getDelY());
             }
 
             // if mAutoReCenterButton is false we will send the last strength and angle a bit
@@ -464,7 +458,7 @@ public class JoystickView extends View
             mThread.start();
 
             if (mCallback != null)
-                mCallback.onMove(getAngle(), getStrength());
+                mCallback.onMove(getDelX(), getDelY());
         }
 
         // handle first touch and long press with multiple touch only
@@ -502,20 +496,27 @@ public class JoystickView extends View
             }
         }
 
-        double abs = Math.sqrt((mPosX - mCenterX) * (mPosX - mCenterX)
-                + (mPosY - mCenterY) * (mPosY - mCenterY));
-
-        // (abs > mBorderRadius) means button is too far therefore we limit to border
-        // (buttonStickBorder && abs != 0) means wherever is the button we stick it to the border except when abs == 0
-        if (abs > mBorderRadius || (mButtonStickToBorder && abs != 0)) {
-            mPosX = (int) ((mPosX - mCenterX) * mBorderRadius / abs + mCenterX);
-            mPosY = (int) ((mPosY - mCenterY) * mBorderRadius / abs + mCenterY);
+        if (mPosX - mCenterX > mBorderWidth/2)
+        {
+            mPosX = mCenterX + mBorderWidth/2;
+        }
+        if (mCenterX - mPosX > mBorderWidth/2)
+        {
+            mPosX = mCenterX - mBorderWidth/2;
+        }
+        if (mPosY - mCenterY > mBorderHeight/2)
+        {
+            mPosY = mCenterY + mBorderHeight/2;
+        }
+        if (mCenterY - mPosY > mBorderHeight/2)
+        {
+            mPosY = mCenterY - mBorderHeight/2;
         }
 
         if (!mAutoReCenterButton) {
             // Now update the last strength and angle if not reset to center
             if (mCallback != null)
-                mCallback.onMove(getAngle(), getStrength());
+                mCallback.onMove(getDelX(), getDelY());
         }
 
 
@@ -541,14 +542,12 @@ public class JoystickView extends View
     }
 
 
-    /**
-     * Process the strength as a percentage of the distance between the center and the border.
-     * @return the strength of the button
-     */
-    private int getStrength() {
-        return (int) (100 * Math.sqrt((mPosX - mCenterX)
-                * (mPosX - mCenterX) + (mPosY - mCenterY)
-                * (mPosY - mCenterY)) / mBorderRadius);
+    private int getDelX() {
+        return (int) (100 * (mPosX-mCenterX)/(mBorderWidth/2.0));
+    }
+
+    private int getDelY() {
+        return (int) (100 * (mPosY-mCenterY)/(mBorderHeight/2.0));
     }
 
 
@@ -608,15 +607,6 @@ public class JoystickView extends View
      */
     public boolean isAutoReCenterButton() {
         return mAutoReCenterButton;
-    }
-
-
-    /**
-     * Return the current behavior of the button stick to border
-     * @return True if the button stick to the border otherwise False
-     */
-    public boolean isButtonStickToBorder() {
-        return mButtonStickToBorder;
     }
 
 
@@ -698,9 +688,9 @@ public class JoystickView extends View
      * @param color the color of the border
      */
     public void setBorderColor(int color) {
-        mPaintCircleBorder.setColor(color);
+        mPaintBorder.setColor(color);
         if (color != Color.TRANSPARENT) {
-            mPaintCircleBorder.setAlpha(mBorderAlpha);
+            mPaintBorder.setAlpha(mBorderAlpha);
         }
         invalidate();
     }
@@ -712,7 +702,7 @@ public class JoystickView extends View
      */
     public void setBorderAlpha(int alpha) {
         mBorderAlpha = alpha;
-        mPaintCircleBorder.setAlpha(alpha);
+        mPaintBorder.setAlpha(alpha);
         invalidate();
     }
 
@@ -733,8 +723,11 @@ public class JoystickView extends View
      * @param width the width of the border
      */
     public void setBorderWidth(int width) {
-        mPaintCircleBorder.setStrokeWidth(width);
-        mBackgroundRadius = mBorderRadius - (width / 2.0f);
+        mPaintBorder.setStrokeWidth(width);
+
+        mBackgroundWidth = mBorderWidth - (width / 2);
+        mBackgroundHeight = mBorderHeight - (width / 2);
+
         invalidate();
     }
 
@@ -826,15 +819,6 @@ public class JoystickView extends View
 
 
     /**
-     * Set the current behavior of the button stick to border
-     * @param b True if the button stick to the border or False (default) if not
-     */
-    public void setButtonStickToBorder(boolean b) {
-        mButtonStickToBorder = b;
-    }
-
-
-    /**
      * Set the current authorized direction for the button to move
      * @param direction the value will define the authorized direction:
      *                  - any negative value (such as -1) for horizontal axe
@@ -857,7 +841,7 @@ public class JoystickView extends View
             post(new Runnable() {
                 public void run() {
                     if (mCallback != null)
-                        mCallback.onMove(getAngle(), getStrength());
+                        mCallback.onMove(getDelX(), getDelY());
                 }
             });
 
