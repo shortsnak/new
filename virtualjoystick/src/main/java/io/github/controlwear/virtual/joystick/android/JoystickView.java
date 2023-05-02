@@ -535,7 +535,7 @@ public class JoystickView extends View
      * Process the angle following the 360° counter-clock protractor rules.
      * @return the angle of the button
      */
-    private int getAngle() {
+    puplic int getAngle() {
         int angle = (int) Math.toDegrees(Math.atan2(mCenterY - mPosY, mPosX - mCenterX));
         return angle < 0 ? angle + 360 : angle; // make it as a regular counter-clock protractor
     }
@@ -545,7 +545,7 @@ public class JoystickView extends View
      * Process the strength as a percentage of the distance between the center and the border.
      * @return the strength of the button
      */
-    private int getStrength() {
+    puplic int getStrength() {
         return (int) (100 * Math.sqrt((mPosX - mCenterX)
                 * (mPosX - mCenterX) + (mPosY - mCenterY)
                 * (mPosY - mCenterY)) / mBorderRadius);
