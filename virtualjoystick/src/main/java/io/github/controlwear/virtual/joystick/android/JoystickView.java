@@ -658,6 +658,24 @@ public class JoystickView extends View
     SETTERS
      */
 
+    /**
+     * Sets the angle following the 360° counter-clock protractor rules.
+     */
+    puplic void setAngle(int angle) {
+        mPosX = (getStrength() * 0.01 * Math.cos(Math.toRadians(angle))) + mCenterX;
+        mPosY = (getStrength() * 0.01 * Math.sin(Math.toRadians(angle))) + mCenterY;
+        invalidate();
+    }
+
+
+    /**
+     * Sets the strength as a percentage of the distance between the center and the border.
+     */
+    puplic int setStrength(int strength) {
+       mPosX = (strength * 0.01 * Math.cos(Math.toRadians(getAngle()))) + mCenterX;
+       mPosY = (strength * 0.01 * Math.sin(Math.toRadians(getAngle()))) + mCenterY;
+       invalidate();
+    }
 
     /**
      * Set an image to the button with a drawable
