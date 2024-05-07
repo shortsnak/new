@@ -12,9 +12,7 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewConfiguration;
 
-public class JoystickView extends View
-        implements
-        Runnable {
+public class JoystickView extends View {
 
 
     /*
@@ -182,8 +180,7 @@ public class JoystickView extends View
      * Based on mBorderRadius but a bit smaller (minus half the stroke size of the border)
      */
     private float mBackgroundRadius;
-        
-    private MotionEvent mEvent;
+
 
     /**
      * Listener used to dispatch OnMove event
@@ -191,7 +188,7 @@ public class JoystickView extends View
     private OnMoveListener mCallback;
     
     private long mLoopInterval = DEFAULT_LOOP_INTERVAL;
-    private Thread mThread = new Thread(this);
+//    private Thread mThread = new Thread(this);
 
 
     /**
@@ -425,7 +422,6 @@ public class JoystickView extends View
      */
     @Override
     public boolean onTouchEvent(MotionEvent event) {
-        mEvent = event;
         // if disabled we don't move the
         if (!mEnabled) {
             return true;
@@ -435,12 +431,12 @@ public class JoystickView extends View
         // (or limited to one axe according to direction option
         mPosY = mButtonDirection < 0 ? mCenterY : (int) event.getY(); // direction negative is horizontal axe
         mPosX = mButtonDirection > 0 ? mCenterX : (int) event.getX(); // direction positive is vertical axe
-        
+        // up
         if (event.getAction() == MotionEvent.ACTION_UP || event.getAction() == MotionEvent.ACTION_CANCEL) {
             isPressed = false;
             // stop listener because the finger left the touch screen
-            mThread.interrupt();
-            
+//            mThread.interrupt();
+
             // re-center the button or not (depending on settings)
             if (mAutoReCenterButton) {
                 resetButtonPosition();
@@ -454,14 +450,16 @@ public class JoystickView extends View
             // later only after processing new position X and Y otherwise it could be above the border limit
         }
 
+
+        // down
         if (event.getAction() == MotionEvent.ACTION_DOWN) {
             isPressed = true;
-            if (mThread != null && mThread.isAlive()) {
-                mThread.interrupt();
-            }
+//            if (mThread != null && mThread.isAlive()) {
+//                mThread.interrupt();
+//            }
 
-            mThread = new Thread(this);
-            mThread.start();
+//            mThread = new Thread(this);
+//            mThread.start();
         }
 
         // handle first touch and long press with multiple touch only
@@ -871,21 +869,21 @@ public class JoystickView extends View
      */
 
 
-    @Override // Runnable
-    public void run() {
-        while (!Thread.interrupted()) {
-            post(new Runnable() {
-                public void run() {
-                    if (mCallback != null)
-                        mCallback.onMove(getAngle(), getStrength(), mEvent);
-                }
-            });
-
-            try {
-                Thread.sleep(mLoopInterval);
-            } catch (InterruptedException e) {
-                break;
-            }
-        }
-    }
+//    @Override // Runnable
+//    public void run() {
+//        while (!Thread.interrupted()) {
+//            post(new Runnable() {
+//                public void run() {
+//                    if (mCallback != null)
+//                        mCallback.onMove(getAngle(), getStrength());
+//                }
+//            });
+//
+//            try {
+//                Thread.sleep(mLoopInterval);
+//            } catch (InterruptedException e) {
+//                break;
+//            }
+//        }
+//    }
 }
