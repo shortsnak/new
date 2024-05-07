@@ -440,9 +440,6 @@ public class JoystickView extends View
 
             mThread = new Thread(this);
             mThread.start();
-
-            if (mCallback != null)
-                mCallback.onMove(getAngle(), getStrength());
         }
 
         // handle first touch and long press with multiple touch only
