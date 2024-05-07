@@ -33,7 +33,7 @@ public class JoystickView extends View
          * @param angle current angle
          * @param strength current strength
          */
-        void onMove(int angle, int strength);
+        void onMove(int angle, int strength, MotionEvent evento);
     }
 
 
@@ -182,13 +182,14 @@ public class JoystickView extends View
      * Based on mBorderRadius but a bit smaller (minus half the stroke size of the border)
      */
     private float mBackgroundRadius;
-
+        
+    private MotionEvent mEvent;
 
     /**
      * Listener used to dispatch OnMove event
      */
     private OnMoveListener mCallback;
-
+    
     private long mLoopInterval = DEFAULT_LOOP_INTERVAL;
     private Thread mThread = new Thread(this);
 
@@ -409,6 +410,7 @@ public class JoystickView extends View
      */
     @Override
     public boolean onTouchEvent(MotionEvent event) {
+        mEvent = event;
         // if disabled we don't move the
         if (!mEnabled) {
             return true;
@@ -426,7 +428,7 @@ public class JoystickView extends View
 
                 // update now the last strength and angle which should be zero after resetButton
                 if (mCallback != null)
-                    mCallback.onMove(getAngle(), getStrength());
+                    mCallback.onMove(getAngle(), getStrength(), event);
             }
 
             // if mAutoReCenterButton is false we will send the last strength and angle a bit
@@ -490,7 +492,7 @@ public class JoystickView extends View
         if (!mAutoReCenterButton) {
             // Now update the last strength and angle if not reset to center
             if (mCallback != null)
-                mCallback.onMove(getAngle(), getStrength());
+                mCallback.onMove(getAngle(), getStrength(), event);
         }
 
 
@@ -822,7 +824,7 @@ public class JoystickView extends View
             post(new Runnable() {
                 public void run() {
                     if (mCallback != null)
-                        mCallback.onMove(getAngle(), getStrength());
+                        mCallback.onMove(getAngle(), getStrength(), mEvent);
                 }
             });
 
