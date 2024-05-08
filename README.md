@@ -2,7 +2,7 @@
 
 [![](https://jitpack.io/v/BenDelGreco/virtual-joystick-android.svg)](https://jitpack.io/#BenDelGreco/virtual-joystick-android)
 
-**v1.10.1** _(New version - [support custom images](#image), button & background size, limited direction, normalized coordinate, alpha border)_
+**v1.13.1** _(New version - [support custom images](#image), button & background size, limited direction, normalized coordinate, alpha border)_
 
 _I created this very simple library as a learning process and I have been inspired by this project [JoystickView](https://github.com/zerokol/JoystickView) (the author is a genius!)_
 
@@ -34,10 +34,6 @@ The **angle** follow the rules of a simple **counter-clock** protractor. The **s
 
 ![Alt text](/misc/virtual-joystick.png?raw=true "Explanation")
 
-By default the **refresh rate** to get the data is **20/sec (every 50ms)**. If you want more or less just set the listener with one more parameters to set the refresh rate in milliseconds.
-```java
-joystick.setOnMoveListener(new JoystickView.OnMoveListener() { ... }, 17); // around 60/sec
-```
 
 ### Attributes
 
@@ -92,8 +88,6 @@ joystick.setBackgroundSizeRatio(0.5);
 joystick.setButtonSizeRatio(0.1);
 ```
 
-_The background size is not working for a custom picture._
-
 #### FixedCenter or Not? (and auto re-center)
 If you don’t set up this parameter, it will be FixedCenter by default, which is the regular behavior.
 
@@ -135,23 +129,22 @@ We can also set this option in the Java file by setting an integer value:
 joystick.setButtonDirection(1); // vertical
 ```
 
-### Wearable
-If you use this library in Wearable app, you will probably disable the Swipe-To-Dismiss Gesture and implement the Long Press to Dismiss Pattern, which could be a problem for a Joystick Pattern (because we usually let the user touch the joystick as long as she/he wants), in that case you can set another convenient listener: `OnMultipleLongPressListener` which will be invoked only with multiple pointers (at least two fingers) instead of one.
-```java
-joystick.setOnMultiLongPressListener(new JoystickView.OnMultipleLongPressListener() {
-    @Override
-    public void onMultipleLongPress() {
-        ... // eg. mDismissOverlay.show();
-    }
-});
+#### Deadzone
+Most joysticks have an inner deadzone, else games would feel hypersensitive in their inputs.
+By default, the deadzone is at 10% strength.
+To change the deadzone, you can specify the following in xml.
+```xml
+<...
+    custom:JV_deadzone="integer"/>
 ```
+
 Or better, if you just want a simple Joystick (and few other cool stuff) as a controller for your mobile app you can use the following related project ;)
 
 ## Demo
 For those who want more than just a snippet, here is the demo :
 - [Basic two joysticks ](https://github.com/controlwear/virtual-joystick-demo) (similar to screenshot)
 
-If you want to add your project here, go ahead :)
+
 
 ## Required
 Minimum API level is 16 (Android 4.1.x - Jelly Bean) which cover 99.5% of the Android platforms as of October 2018 according to the  <a href="https://developer.android.com/about/dashboards" class="user-mention">distribution dashboard</a>.
@@ -159,7 +152,9 @@ Minimum API level is 16 (Android 4.1.x - Jelly Bean) which cover 99.5% of the An
 ## Download
 ### Gradle
 ```java
-compile 'io.github.controlwear:virtualjoystick:1.10.1'
+dependencies {
+	        implementation 'com.github.Mathias-Boulay:virtual-joystick-android:1.12.3'
+	}
 ```
 
 ## Contributing
