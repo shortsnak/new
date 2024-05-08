@@ -30,20 +30,15 @@ public class JoystickView extends View {
          */
         void onMove(int angle, int strength, MotionEvent evento);
     }
-
-
-    public enum AxisToCenter {
-        BOTH, X, Y
-    }
-
+    
 
     /*
     CONSTANTS
     */
-
+    public static final int BUTTON_DIRECTION_VERTICAL = 1;
     /** Default value for both directions (horizontal and vertical movement) */
     public static final int BUTTON_DIRECTION_BOTH = 0;
-
+    public static final int BUTTON_DIRECTION_HORIZONTAL = -1;
     /** Used to allow a slight move without cancelling MultipleLongPress */
     private static final int DEFAULT_DEADZONE = 10;
 
@@ -77,9 +72,9 @@ public class JoystickView extends View {
     private static final boolean DEFAULT_BUTTON_STICK_TO_BORDER = false;
 
     // DRAWING
-    private Paint mPaintCircleButton;
-    private Paint mPaintCircleBorder;
-    private Paint mPaintBackground;
+    private final Paint mPaintCircleButton;
+    private final Paint mPaintCircleBorder;
+    private final Paint mPaintBackground;
 
     private Drawable mButtonDrawable;
 
@@ -155,7 +150,7 @@ public class JoystickView extends View {
     private boolean isPressed = false;
     
     /** axis to be centered */
-    private AxisToCenter axisToCenter = AxisToCenter.BOTH;
+    private int mAxisToCenter = BUTTON_DIRECTION_BOTH;
 
 
     /*
@@ -173,10 +168,14 @@ public class JoystickView extends View {
     }
 
 
-    public JoystickView(Context context, AttributeSet attrs, int defStyleAttr) {
-        this(context, attrs);
+    public JoystickView(Context context, AttributeSet attrs) {
+        this(context, attrs, 0);
     }
 
+
+    public JoystickView(Context context, AttributeSet attrs, int defStyleAttr) {
+        this(context, attrs, defStyleAttr, 0);
+    }
 
     /**
      * Constructor that is called when inflating a JoystickView from XML. This is called
@@ -186,13 +185,13 @@ public class JoystickView extends View {
      *        access the current theme, resources, etc.
      * @param attrs The attributes of the XML tag that is inflating the JoystickView.
      */
-    public JoystickView(Context context, AttributeSet attrs) {
-        super(context, attrs);
+    public JoystickView(Context context, AttributeSet attrs, int defStyleAttr, int defStyleRes) {
+        super(context, attrs, defStyleAttr);
 
         TypedArray styledAttributes = context.getTheme().obtainStyledAttributes(
                 attrs,
                 R.styleable.JoystickView,
-                0, 0
+                defStyleAttr, defStyleRes
         );
 
         int buttonColor;
@@ -214,6 +213,7 @@ public class JoystickView extends View {
             mButtonSizeRatio = styledAttributes.getFraction(R.styleable.JoystickView_JV_buttonSizeRatio, 1, 1, 0.25f);
             mBackgroundSizeRatio = styledAttributes.getFraction(R.styleable.JoystickView_JV_backgroundSizeRatio, 1, 1, 0.75f);
             mButtonDirection = styledAttributes.getInteger(R.styleable.JoystickView_JV_buttonDirection, BUTTON_DIRECTION_BOTH);
+            mAxisToCenter = styledAttributes.getInteger(R.styleable.JoystickView_JV_axisToCenter, BUTTON_DIRECTION_BOTH);
         } finally {
             styledAttributes.recycle();
         }
@@ -351,8 +351,8 @@ public class JoystickView extends View {
         // (or limited to one axe according to direction option
         int pointerIndex;
         if( (pointerIndex = event.findPointerIndex(pointerID)) != -1 ){
-            mPosY = mButtonDirection < 0 ? mCenterY : (int) event.getY(pointerIndex); // direction negative is horizontal axe
-            mPosX = mButtonDirection > 0 ? mCenterX : (int) event.getX(pointerIndex); // direction positive is vertical axe
+            mPosY = mButtonDirection < BUTTON_DIRECTION_BOTH ? mCenterY : (int) event.getY(pointerIndex); // direction negative is HORIZONTAL axe
+            mPosX = mButtonDirection > BUTTON_DIRECTION_BOTH ? mCenterX : (int) event.getX(pointerIndex); // direction positive is vertical axe
         }
 
         if(event.getAction() == MotionEvent.ACTION_POINTER_UP){
@@ -376,7 +376,7 @@ public class JoystickView extends View {
             }
 
             // if mAutoReCenterButton is false we will send the last strength and angle a bit
-            // later only after processing new position X and Y otherwise it could be above the border limit
+            // later only after processing new position HORIZONTAL and VERTICAL otherwise it could be above the border limit
         }
         
         // down
@@ -390,8 +390,8 @@ public class JoystickView extends View {
             // Map the pointerID
             pointerID = event.getPointerId(event.getActionIndex());
 
-            mPosY = mButtonDirection < 0 ? mCenterY : (int) event.getY(); // direction negative is horizontal axe
-            mPosX = mButtonDirection > 0 ? mCenterX : (int) event.getX(); // direction positive is vertical axe
+            mPosY = mButtonDirection < BUTTON_DIRECTION_BOTH ? mCenterY : (int) event.getY(); // direction negative is HORIZONTAL axe
+            mPosX = mButtonDirection > BUTTON_DIRECTION_BOTH ? mCenterX : (int) event.getX(); // direction positive is vertical axe
         }
 
         // handle first touch and long press with multiple touch only
@@ -439,7 +439,7 @@ public class JoystickView extends View {
      * Process the angle following the 360° counter-clock protractor rules.
      * @return the angle of the button
      */
-    puplic int getAngle() {
+    public int getAngle() {
         int angle = (int) Math.toDegrees(Math.atan2(mCenterY - mPosY, mPosX - mCenterX));
         return angle < 0 ? angle + 360 : angle; // make it as a regular counter-clock protractor
     }
@@ -448,32 +448,20 @@ public class JoystickView extends View {
      * Process the strength as a percentage of the distance between the center and the border.
      * @return the strength of the button
      */
-    puplic int getStrength() {
+    public int getStrength() {
         return (int) (100 * Math.sqrt((mPosX - mCenterX)
                 * (mPosX - mCenterX) + (mPosY - mCenterY)
                 * (mPosY - mCenterY)) / mBorderRadius);
     }
 
-
     /**
      * Reset the button position to the center.
      */
     public void resetButtonPosition() {
-        switch (axisToCenter) {
-            case BOTH:
-                mPosX = mCenterX;
-                mPosY = mCenterY;
-                break;
-            case X:
-                mPosX = mCenterX;
-                break;
-            case Y:
-                mPosY = mCenterY;
-                break;
-        }
+        mPosY = mAxisToCenter < BUTTON_DIRECTION_BOTH ? mPosY : mCenterY; // Axis positive, center vertical axe
+        mPosX = mAxisToCenter > BUTTON_DIRECTION_BOTH ? mPosX : mCenterX; // Axis negative, center horizontal axe
     }
-
-
+    
     /**
      * Return the current direction allowed for the button to move
      * @return Actually return an integer corresponding to the direction:
@@ -484,7 +472,6 @@ public class JoystickView extends View {
     public int getButtonDirection() {
         return mButtonDirection;
     }
-
 
     /**
      * Return the state of the joystick. False when the button don't move.
@@ -534,9 +521,9 @@ public class JoystickView extends View {
 
 
     /**
-     * Return the relative X coordinate of button center related
+     * Return the relative HORIZONTAL coordinate of button center related
      * to top-left virtual corner of the border
-     * @return coordinate of X (normalized between 0 and 100)
+     * @return coordinate of HORIZONTAL (normalized between 0 and 100)
      */
     public int getNormalizedX() {
         if (getWidth() == 0) {
@@ -547,9 +534,9 @@ public class JoystickView extends View {
 
 
     /**
-     * Return the relative Y coordinate of the button center related
+     * Return the relative VERTICAL coordinate of the button center related
      * to top-left virtual corner of the border
-     * @return coordinate of Y (normalized between 0 and 100)
+     * @return coordinate of VERTICAL (normalized between 0 and 100)
      */
     public int getNormalizedY() {
         if (getHeight() == 0) {
@@ -574,9 +561,9 @@ public class JoystickView extends View {
     /**
      * Sets the angle following the 360° counter-clock protractor rules.
      */
-    puplic void setAngle(int angle) {
-        mPosX = (getStrength() * 0.01 * Math.cos(Math.toRadians(angle))) + mCenterX;
-        mPosY = (getStrength() * 0.01 * Math.sin(Math.toRadians(angle))) + mCenterY;
+    public void setAngle(int angle) {
+        mPosX = (int) ((getStrength() * 0.01 * Math.cos(Math.toRadians(angle))) + mCenterX);
+        mPosY = (int) ((getStrength() * 0.01 * Math.sin(Math.toRadians(angle))) + mCenterY);
         invalidate();
     }
 
@@ -584,9 +571,9 @@ public class JoystickView extends View {
     /**
      * Sets the strength as a percentage of the distance between the center and the border.
      */
-    puplic int setStrength(int strength) {
-       mPosX = (strength * 0.01 * Math.cos(Math.toRadians(getAngle()))) + mCenterX;
-       mPosY = (strength * 0.01 * Math.sin(Math.toRadians(getAngle()))) + mCenterY;
+    public void setStrength(int strength) {
+       mPosX = (int) ((strength * 0.01 * Math.cos(Math.toRadians(getAngle()))) + mCenterX);
+       mPosY = (int) ((strength * 0.01 * Math.sin(Math.toRadians(getAngle()))) + mCenterY);
        invalidate();
     }
 
@@ -764,15 +751,15 @@ public class JoystickView extends View {
      * get axis to be centered
      * @return
      */
-    public AxisToCenter getAxisToCenter() {
-        return axisToCenter;
+    public int getAxisToCenter() {
+        return mAxisToCenter;
     }
 
     /**
      * set axis to be centered
      * @param axisToCenter
      */
-    public void setAxisToCenter(AxisToCenter axisToCenter) {
-        this.axisToCenter = axisToCenter;
+    public void setAxisToCenter(int axisToCenter) {
+        this.mAxisToCenter = axisToCenter;
     }
 }
