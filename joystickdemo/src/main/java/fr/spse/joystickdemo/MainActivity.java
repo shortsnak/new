@@ -1,8 +1,7 @@
 package fr.spse.joystickdemo;
 
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.widget.CompoundButton;
+import android.support.v7.app.AppCompatActivity;
 import android.widget.Switch;
 
 import io.github.controlwear.virtual.joystick.android.JoystickView;
@@ -29,7 +28,7 @@ public class MainActivity extends AppCompatActivity {
         joystick.setAutoReCenterButton(autoCenterSwitch.isChecked());
 
 
-        joystick.setForwardLockDistance(30);
+   
 
     }
 }
