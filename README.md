@@ -2,7 +2,7 @@
 
 [![](https://jitpack.io/v/BenDelGreco/virtual-joystick-android.svg)](https://jitpack.io/#BenDelGreco/virtual-joystick-android)
 
-**v1.13.1** _(New version - [support custom images](#image), button & background size, limited direction, normalized coordinate, alpha border)_
+**v1.13.5** _(New version - [support custom images](#image), button & background size, limited direction, normalized coordinate, alpha border)_
 
 _I created this very simple library as a learning process and I have been inspired by this project [JoystickView](https://github.com/zerokol/JoystickView) (the author is a genius!)_
 
@@ -24,7 +24,7 @@ protected void onCreate(Bundle savedInstanceState) {
     JoystickView joystick = (JoystickView) findViewById(R.id.joystickView);
     joystick.setOnMoveListener(new JoystickView.OnMoveListener() {
         @Override
-        public void onMove(int angle, int strength) {
+        public void onMove(int angle, int strength, MotionEvent event) {
             // do whatever you want
         }
     });
@@ -72,9 +72,9 @@ If you want a more customized joystick, you can use `JV_buttonImage` and the reg
 We can change the default size of the button and background.
 The size is calculated as a percentage of the total width/height.
 
-By default, the button is 25% (0.25) and the background 75% (0.25), as the first screenshot above.
+By default, the button is 25% (25) and the background 75% (75), as the first screenshot above.
 
-If the total (background + button) is above 1.0, the button will probably be a bit cut when on the border.
+If the total (background + button) is above 100%, the button will probably be a bit cut when on the border.
 
 ```xml
 <...
@@ -84,8 +84,8 @@ If the total (background + button) is above 1.0, the button will probably be a b
 ```
 
 ```java
-joystick.setBackgroundSizeRatio(0.5);
-joystick.setButtonSizeRatio(0.1);
+joystick.setBackgroundSizeRatio(50);
+joystick.setButtonSizeRatio(10);
 ```
 
 #### FixedCenter or Not? (and auto re-center)
@@ -121,12 +121,12 @@ By default the button can move in both direction X,Y (regular behavior), but we 
 In the layout file (xml), this option can be set to `horizontal`, `vertical` or `both`.
 
 We can also set this option in the Java file by setting an integer value:
-- any negative value (e.g. -1) for the horizontal axe
-- any positive value (e.g. 1) for the vertical axe
-- zero (0) for both (which is the default option)
+- `BUTTON_DIRECTION_HORIZONTAL` for the horizontal axe
+- `BUTTON_DIRECTION_VERTICAL` for the vertical axe
+- `BUTTON_DIRECTION_BOTH` for both (which is the default option)
 
 ```java
-joystick.setButtonDirection(1); // vertical
+joystick.setButtonDirection(JoystickView.BUTTON_DIRECTION_VERTICAL); // vertical
 ```
 
 #### Deadzone
@@ -135,14 +135,14 @@ By default, the deadzone is at 10% strength.
 To change the deadzone, you can specify the following in xml.
 ```xml
 <...
-    custom:JV_deadzone="integer"/>
+    custom:JV_deadzone="10%"/>
 ```
 
 Or better, if you just want a simple Joystick (and few other cool stuff) as a controller for your mobile app you can use the following related project ;)
 
 ## Demo
 For those who want more than just a snippet, here is the demo :
-- [Basic two joysticks ](https://github.com/controlwear/virtual-joystick-demo) (similar to screenshot)
+- [Basic two joysticks ](https://github.com/lukkass222/virtual-joystick-android/tree/master/joystickdemo_2) (similar to screenshot)
 
 
 

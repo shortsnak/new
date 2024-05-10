@@ -4,14 +4,14 @@ plugins{
 }
 
 android {
-    compileSdkVersion 33
+    compileSdk 34
 
     defaultConfig {
-        minSdkVersion 19
-        targetSdkVersion 33
+        minSdkVersion 16
         versionCode 22
         versionName "1.13.5"
     }
+    
     buildTypes {
         release {
             minifyEnabled false
