@@ -6,6 +6,7 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.drawable.Drawable;
+import android.support.annotation.NonNull;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.View;
@@ -115,7 +116,7 @@ public class JoystickView extends View {
 
     // SIZE
     private int mButtonRadius;
-    private int mBorderRadius;
+    private float mBorderRadius;
     private int mBorderWidth, mBorderHeight;
 
 
@@ -128,7 +129,7 @@ public class JoystickView extends View {
     /**Based on mBorderWidth/Height but a bit smaller (minus half the stroke size of the border) */
     private float mBackgroundWidth, mBackgroundHeight;
     
-    public boolean useRectangle =false;
+    private boolean isRectangle;
 
     /** Listener used to dispatch OnMove event */
     private OnMoveListener mCallback;
@@ -154,7 +155,7 @@ public class JoystickView extends View {
     private boolean isPressed = false;
     
     /** axis to be centered */
-    private int mAxisToCenter = BUTTON_DIRECTION_BOTH;
+    private int mAxisToCenter;
 
 
     /*
@@ -219,6 +220,8 @@ public class JoystickView extends View {
             mBackgroundSizeRatio = styledAttributes.getFraction(R.styleable.JoystickView_JV_backgroundSizeRatio, 1, 1, 0.75f);
             mButtonDirection = styledAttributes.getInteger(R.styleable.JoystickView_JV_buttonDirection, BUTTON_DIRECTION_BOTH);
             mAxisToCenter = styledAttributes.getInteger(R.styleable.JoystickView_JV_axisToCenter, BUTTON_DIRECTION_BOTH);
+            isRectangle = styledAttributes.getBoolean(R.styleable.JoystickView_JV_useRectangle, false);
+            
         } finally {
             styledAttributes.recycle();
         }
@@ -248,7 +251,6 @@ public class JoystickView extends View {
         mPaintBackground.setStyle(Paint.Style.FILL);
     }
 
-
     private void initPosition() {
         // get the center of view to position circle
         mFixedCenterX = mCenterX = mPosX = getWidth() / 2;
@@ -264,8 +266,8 @@ public class JoystickView extends View {
      * @param canvas the canvas on which the shapes will be drawn
      */
     @Override
-    protected void onDraw(Canvas canvas) {
-        if (useRectangle) {
+    protected void onDraw(@NonNull Canvas canvas) {
+        if (isRectangle) {
             // Draw the rectangle background
             canvas.drawRect(
                     mFixedCenterX - mBackgroundWidth / 2f,
@@ -288,7 +290,11 @@ public class JoystickView extends View {
             // Draw the circle border
             canvas.drawCircle(mFixedCenterX, mFixedCenterY, mBorderRadius, mPaintBorder);
         }
-        
+        /*
+        canvas.drawLine(mCenterX, mCenterY, mCenterX+mBorderWidth/2f, mCenterY+mBorderHeight /2f, mPaintBorder);//raio
+        canvas.drawLine(mFixedCenterX, mFixedCenterY, mFixedCenterX+mBorderWidth/2f, mFixedCenterY, mPaintBorder);
+        canvas.drawLine(mCenterX, mCenterY, mPosX,mPosY,mPaintBorder);
+       */
         // Draw the button from image
         if (mButtonDrawable != null) {
             int x = mPosX + mFixedCenterX - mCenterX - mButtonRadius;
@@ -306,8 +312,7 @@ public class JoystickView extends View {
             );
         }
     }
-
-
+    
     /**
      * This is called during layout when the size of this view has changed.
      * Here we get the center of the view and the radius to draw all the shapes.
@@ -326,21 +331,18 @@ public class JoystickView extends View {
         // radius based on smallest size : height OR width
         int d = Math.min(w, h);
         mButtonRadius = (int) (d / 2 * mButtonSizeRatio);
-        mBorderRadius = (int) (d / 2 * mBackgroundSizeRatio);
+        mBorderRadius =   (d / 2f * mBackgroundSizeRatio);
         mBackgroundRadius = mBorderRadius - (mPaintBorder.getStrokeWidth() / 2);
-       
-        mBorderWidth  = (int) (w * mBackgroundSizeRatio);
-        mBorderHeight = (int) (h * mBackgroundSizeRatio);
-        
-        mBackgroundWidth = mBorderWidth - (mPaintBorder.getStrokeWidth() / 2);
-        mBackgroundHeight = mBorderHeight - (mPaintBorder.getStrokeWidth() / 2);
-    }
 
+        mBorderWidth = (int) (mButtonDirection > BUTTON_DIRECTION_BOTH ? d * mButtonSizeRatio : w * mBackgroundSizeRatio);// direction positive is vertical axe
+        mBorderHeight = (int) (mButtonDirection < BUTTON_DIRECTION_BOTH ? d * mButtonSizeRatio : h * mBackgroundSizeRatio);// direction negative is HORIZONTAL axe
+        mBackgroundWidth = mBorderWidth - mPaintBorder.getStrokeWidth() / 2;
+        mBackgroundHeight = mBorderHeight - mPaintBorder.getStrokeWidth() / 2;
+    }
 
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
         // setting the measured values to resize the view to a certain width and height
-        //int d = Math.min(measure(widthMeasureSpec), measure(heightMeasureSpec));
         setMeasuredDimension(measure(widthMeasureSpec), measure(heightMeasureSpec));
     }
 
@@ -361,6 +363,11 @@ public class JoystickView extends View {
     USER EVENT
      */
 
+    @Override
+    public boolean performClick() {
+        return super.performClick();
+    }
+
     /**
      * Handle touch screen motion event. Move the button according to the
      * finger coordinate and detect longPress by multiple pointers only.
@@ -370,24 +377,26 @@ public class JoystickView extends View {
      */
     @Override
     public boolean onTouchEvent(MotionEvent event) {
+        super.onTouchEvent(event);
+        performClick();
         // if disabled we don't move the joystick
         if (!mEnabled) return false;
 
         // to move the button according to the finger coordinate
         // (or limited to one axe according to direction option
         int pointerIndex;
-        if( (pointerIndex = event.findPointerIndex(pointerID)) != -1 ){
+        if ((pointerIndex = event.findPointerIndex(pointerID)) != -1) {
             mPosY = mButtonDirection < BUTTON_DIRECTION_BOTH ? mCenterY : (int) event.getY(pointerIndex); // direction negative is HORIZONTAL axe
             mPosX = mButtonDirection > BUTTON_DIRECTION_BOTH ? mCenterX : (int) event.getX(pointerIndex); // direction positive is vertical axe
         }
 
-        if(event.getAction() == MotionEvent.ACTION_POINTER_UP){
-            if(event.findPointerIndex(pointerID) == event.getActionIndex())
+        if (event.getAction() == MotionEvent.ACTION_POINTER_UP) {
+            if (event.findPointerIndex(pointerID) == event.getActionIndex())
                 event.setAction(MotionEvent.ACTION_UP);
         }
 
-        if(event.getAction() == MotionEvent.ACTION_POINTER_DOWN){
-            if(pointerID == -1) event.setAction(MotionEvent.ACTION_DOWN);
+        if (event.getAction() == MotionEvent.ACTION_POINTER_DOWN) {
+            if (pointerID == -1) event.setAction(MotionEvent.ACTION_DOWN);
         }
 
         // up
@@ -404,14 +413,18 @@ public class JoystickView extends View {
             // if mAutoReCenterButton is false we will send the last strength and angle a bit
             // later only after processing new position HORIZONTAL and VERTICAL otherwise it could be above the border limit
         }
-        
+
         // down
         if (event.getAction() == MotionEvent.ACTION_DOWN) {
             // Check if the pointer is inside the original joystick zone
-
-            if(Math.hypot(Math.abs(mFixedCenterX - event.getX()), Math.abs(mFixedCenterY - event.getY())) > mBackgroundRadius + mPaintBorder.getStrokeWidth())
+            if (isRectangle) {
+                if (Math.abs(mFixedCenterX - event.getX()) > mBackgroundWidth / 2f + mPaintBorder.getStrokeWidth())
+                    return false; // outside of the round joystick
+                if (Math.abs(mFixedCenterY - event.getY()) > mBackgroundHeight / 2f + mPaintBorder.getStrokeWidth())
+                    return false; // outside of the round joystick
+            } else if (Math.hypot(Math.abs(mFixedCenterX - event.getX()), Math.abs(mFixedCenterY - event.getY())) > mBackgroundRadius + mPaintBorder.getStrokeWidth())
                 return false; // outside of the round joystick
-            
+
             isPressed = true;
             // Map the pointerID
             pointerID = event.getPointerId(event.getActionIndex());
@@ -428,36 +441,34 @@ public class JoystickView extends View {
                 mCenterY = mPosY;
             }
         }
-        
-        if (useRectangle) {
-            if (mPosX - mCenterX > mBorderWidth/2)
-            {
-                mPosX = mCenterX + mBorderWidth/2;
-            }
-            if (mCenterX - mPosX > mBorderWidth/2)
-            {
-                mPosX = mCenterX - mBorderWidth/2;
-            }
-            if (mPosY - mCenterY > mBorderHeight/2)
-            {
-                mPosY = mCenterY + mBorderHeight/2;
-            }
-            if (mCenterY - mPosY > mBorderHeight/2)
-            {
-                mPosY = mCenterY - mBorderHeight/2;
-            }
-            
-        }else {
-            double abs = Math.sqrt((mPosX - mCenterX) * (mPosX - mCenterX)
-                    + (mPosY - mCenterY) * (mPosY - mCenterY));
 
-            // (abs > mBorderRadius) means button is too far therefore we limit to border
-            // (buttonStickBorder && abs != 0) means wherever is the button we stick it to the border except when abs == 0
-            if (abs > mBorderRadius || (mButtonStickToBorder && abs != 0)) {
-                mPosX = (int) ((mPosX - mCenterX) * mBorderRadius / abs + mCenterX);
-                mPosY = (int) ((mPosY - mCenterY) * mBorderRadius / abs + mCenterY);
-            }
+        double _maxRadius = mBorderRadius;
+        float xPos = mPosX - mCenterX;
+        float yPos = mPosY - mCenterY;
+        
+        if (isRectangle) {
+            float Xb = mBorderWidth / 2f;
+            float Yb = mBorderHeight / 2f;
+            
+            float _X = Math.abs(xPos);
+            float _Y = Math.abs(yPos);
+            
+            //regra de três simples
+            float Yc = (_Y * Xb) / _X;  
+            float Xc = (_X * Yb) / _Y;
+
+            _maxRadius = Math.hypot(Math.min(Xb, Xc), Math.min(Yb, Yc));
         }
+        
+        double _radius = Math.hypot(xPos, yPos);
+
+        // (_radius > mBorderRadius) means button is too far therefore we limit to border
+        // (buttonStickBorder && _radius != 0) means wherever is the button we stick it to the border except when _radius == 0
+        if (_radius > _maxRadius || (mButtonStickToBorder && _radius != 0)) {
+            mPosX = (int) (xPos * _maxRadius / _radius + mCenterX);
+            mPosY = (int) (yPos * _maxRadius / _radius + mCenterY);
+        }
+
         // Events are instantaneous now
         notifyOnMove(getAngle(), getStrength(), event);
 
@@ -494,25 +505,39 @@ public class JoystickView extends View {
         int angle = (int) Math.toDegrees(Math.atan2(mCenterY - mPosY, mPosX - mCenterX));
         return angle < 0 ? angle + 360 : angle; // make it as a regular counter-clock protractor
     }
-
+    
     /**
      * Process the strength as a percentage of the distance between the center and the border.
      * @return the strength of the button
      */
     public int getStrength() {
-        return (int) Math.round(100 * Math.sqrt((mPosX - mCenterX)
-                * (mPosX - mCenterX) + (mPosY - mCenterY)
-                * (mPosY - mCenterY)) / mBorderRadius);
-    }
-    
-    private int getDelX() {
-        return (int) (100 * (mPosX-mCenterX)/(mBorderWidth/2.0));
-    }
 
-    private int getDelY() {
-        return (int) (100 * (mPosY-mCenterY)/(mBorderHeight/2.0));
+        if (isRectangle) {
+            if (false) {
+
+                float Xb = mBorderWidth / 2f;
+
+                float _X = Math.abs(mPosX - mCenterX);
+
+                float Yb = mBorderHeight / 2f;
+
+                float _Y = Math.abs(mPosY - mCenterY);
+
+                float Yc = (_Y * Xb) / _X;
+                float Xc = (_X * Yb) / _Y;
+
+                double _radius = Math.hypot(_X, _Y);
+                double _maxRadius = Math.hypot(Math.min(Xb, Xc), Math.min(Yb, Yc));
+
+                return (int) Math.round(_radius / _maxRadius * 100.0f);
+            } else
+                return Math.max(Math.abs(getDelX()), Math.abs(getDelY()));
+
+        } else
+            return (int) Math.round(100 * Math.hypot(mPosX - mCenterX, mPosY - mCenterY) / mBorderRadius);
     }
     
+
     /**
      * Return the current direction allowed for the button to move
      * @return Actually return an integer corresponding to the direction:
@@ -538,6 +563,10 @@ public class JoystickView extends View {
      */
     public boolean isPressed(){
         return isPressed;
+    }
+
+    public boolean isRectangle(){
+        return isRectangle;
     }
     
     /**
@@ -575,17 +604,33 @@ public class JoystickView extends View {
     public boolean isButtonStickToBorder() {
         return mButtonStickToBorder;
     }
-    
+
+    public int getDelX() {
+        if (isRectangle)
+            return  Math.round((mPosX-mCenterX)*100.0f/(mBorderWidth/2f));
+        else
+            return Math.round((mPosX - mCenterX) * 100.0f / mBorderRadius);
+    }
+
+    public int getDelY() {
+        if (isRectangle)
+            return Math.round((mPosY - mCenterY) * -100.0f / (mBorderHeight / 2.0f));
+        else
+            return Math.round((mPosY - mCenterY) * -100.0f / mBorderRadius);
+    }
+
     /**
      * Return the relative HORIZONTAL coordinate of button center related
      * to top-left virtual corner of the border
      * @return coordinate of HORIZONTAL (normalized between 0 and 100)
      */
     public int getNormalizedX() {
-        if (getWidth() == 0) {
-            return 50;
-        }
-        return Math.round((mPosX-mButtonRadius)*100.0f/(getWidth()-mButtonRadius*2));
+        if (getWidth() == 0) return 50;
+
+        if (isRectangle)
+            return Math.round((mPosX - (mCenterX - mBorderWidth / 2f)) * 100.0f / mBorderWidth);
+        else
+            return Math.round((mPosX - (mCenterX - mBorderRadius)) * 100.0f / (mBorderRadius * 2));
     }
     
     /**
@@ -594,10 +639,11 @@ public class JoystickView extends View {
      * @return coordinate of VERTICAL (normalized between 0 and 100)
      */
     public int getNormalizedY() {
-        if (getHeight() == 0) {
-            return 50;
-        }
-        return Math.round(100-(mPosY-mButtonRadius)*100.0f/(getHeight()-mButtonRadius*2));
+        if (getHeight() == 0) return 50;
+        if (isRectangle)
+            return Math.round(100-(mPosY - (mCenterY - mBorderHeight / 2f)) * 100.0f / mBorderHeight);
+        else
+            return Math.round(100-(mPosY - (mCenterY - mBorderRadius)) * 100.0f / (mBorderRadius * 2));
     }
 
     /**
@@ -789,7 +835,11 @@ public class JoystickView extends View {
         mButtonStickToBorder = b;
     }
 
-
+    public void setRectangle(boolean useRectangle){
+        this.isRectangle = useRectangle;
+        invalidate();
+    }
+    
     /**
      * Set the current authorized direction for the button to move
      * @param direction the value will define the authorized direction:
@@ -799,6 +849,8 @@ public class JoystickView extends View {
      */
     public void setButtonDirection(int direction) {
         mButtonDirection = direction;
+        onSizeChanged(getWidth(),getHeight(), getWidth(), getHeight());
+        invalidate();
     }
     
     /**

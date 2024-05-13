@@ -18,6 +18,8 @@
 
         <attr name="JV_fixedCenter" format="boolean"/>
 
+        <attr name="JV_useRectangle" format="boolean"/>
+
         <attr name="JV_autoReCenterButton" format="boolean"/>
 
         <attr name="JV_buttonStickToBorder" format="boolean"/>

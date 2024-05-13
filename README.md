@@ -2,7 +2,7 @@
 
 [![](https://jitpack.io/v/BenDelGreco/virtual-joystick-android.svg)](https://jitpack.io/#BenDelGreco/virtual-joystick-android)
 
-**v1.13.5** _(New version - [support custom images](#image), button & background size, limited direction, normalized coordinate, alpha border)_
+**v1.13.5** _(New version - [support custom images](#image), button & background size, limited direction, normalized coordinate, alpha border, Rectangle or circle support)_
 
 _I created this very simple library as a learning process and I have been inspired by this project [JoystickView](https://github.com/zerokol/JoystickView) (the author is a genius!)_
 
@@ -37,7 +37,7 @@ The **angle** follow the rules of a simple **counter-clock** protractor. The **s
 
 ### Attributes
 
-You can customize the joystick according to these attributes `JV_axisToCenter`, `JV_buttonImage`, `JV_buttonColor`, `JV_buttonSizeRatio`, `JV_borderColor`, `JV_borderAlpha`, `JV_borderWidth`, `JV_backgroundColor`, `JV_backgroundSizeRatio`, `JV_fixedCenter`, `JV_autoReCenterButton`, `JV_buttonStickToBorder`, `JV_enabled` and `JV_buttonDirection`
+You can customize the joystick according to these attributes `JV_useRectangle`,`JV_axisToCenter`, `JV_buttonImage`, `JV_buttonColor`, `JV_buttonSizeRatio`, `JV_borderColor`, `JV_borderAlpha`, `JV_borderWidth`, `JV_backgroundColor`, `JV_backgroundSizeRatio`, `JV_fixedCenter`, `JV_autoReCenterButton`, `JV_buttonStickToBorder`, `JV_enabled` and `JV_buttonDirection`
 
 If you specified `JV_buttonImage` you don't need `JV_buttonColor`
 
@@ -67,6 +67,11 @@ If you want a more customized joystick, you can use `JV_buttonImage` and the reg
 ```
 
 ![Alt text](/misc/android-virtual-joystick-custom-image.png?raw=true "Left joystick with custom image")
+
+#### Rectangle
+It is possible to combine several configurations to create something new, such as a linear bar
+
+![Alt text](/misc/virtual-joystick-android-rectangle.png?raw=true "rectangle joystick with vertical axis")
 
 #### SizeRatio
 We can change the default size of the button and background.
@@ -142,8 +147,8 @@ Or better, if you just want a simple Joystick (and few other cool stuff) as a co
 
 ## Demo
 For those who want more than just a snippet, here is the demo :
-- [Basic two joysticks ](https://github.com/lukkass222/virtual-joystick-android/tree/master/joystickdemo_2) (similar to screenshot)
-
+- [Basic two joysticks ](https://github.com/lukkass222/virtual-joystick-android/tree/master/joystickdemo_2) [similar to screenshot](#image).
+- [Basic joystick ](https://github.com/lukkass222/virtual-joystick-android/tree/master/joystickdemo) [similar to screenshot](#Rectangle).
 
 
 ## Required
@@ -153,7 +158,7 @@ Minimum API level is 16 (Android 4.1.x - Jelly Bean) which cover 99.5% of the An
 ### Gradle
 ```java
 dependencies {
-	        implementation 'com.github.Mathias-Boulay:virtual-joystick-android:1.12.3'
+	        implementation 'com.github.lukkass222:virtual-joystick-android:1.13.5'
 	}
 ```
 
@@ -180,5 +185,26 @@ limitations under the License.
 
 **virtual-joystick-android** is an open source project created by <a href="https://github.com/makowildcat" class="user-mention">@makowildcat</a> (mostly spare time) and partially funded by [Black Artick](http://blackartick.com/) and [NSERC](http://www.nserc-crsng.gc.ca/index_eng.asp).
 
-Also, thanks to <a href="https://github.com/Bernix01" class="user-mention">Bernix01</a>, <a href="https://github.com/teancake" class="user-mention">teancake</a>, <a href="https://github.com/Spettacolo83" class="user-mention">Spettacolo83</a>, <a href="https://github.com/djjaysmith" class="user-mention">djjaysmith</a>, <a href="https://github.com/jaybkim1" class="user-mention">jaybkim1</a>, <a href="https://github.com/sikrinick" class="user-mention">sikrinick</a>, <a href="https://github.com/AlexandrDavydov" class="user-mention">AlexandrDavydov</a>, <a href="https://github.com/indrek-koue" class="user-mention">indrek-koue</a>, <a href="https://github.com/QitmentX7" class="user-mention">QitmentX7</a>, <a href="https://github.com/esplemea" class="user-mention">esplemea</a>, <a href="https://github.com/FenixGit" class="user-mention">FenixGit</a>, <a href="https://github.com/AlexanderShniperson" class="user-mention">AlexanderShniperson</a>
+Also, thanks to <a href="https://github.com/Bernix01" class="user-mention">Bernix01</a>,
+<a href="https://github.com/teancake" class="user-mention">teancake</a>,
+<a href="https://github.com/Spettacolo83" class="user-mention">Spettacolo83</a>,
+<a href="https://github.com/djjaysmith" class="user-mention">djjaysmith</a>,
+<a href="https://github.com/jaybkim1" class="user-mention">jaybkim1</a>,
+<a href="https://github.com/sikrinick" class="user-mention">sikrinick</a>,
+<a href="https://github.com/AlexandrDavydov" class="user-mention">AlexandrDavydov</a>,
+<a href="https://github.com/indrek-koue" class="user-mention">indrek-koue</a>,
+<a href="https://github.com/QitmentX7" class="user-mention">QitmentX7</a>,
+<a href="https://github.com/esplemea" class="user-mention">esplemea</a>,
+<a href="https://github.com/FenixGit" class="user-mention">FenixGit</a>,
+<a href="https://github.com/AlexanderShniperson" class="user-mention">AlexanderShniperson</a>
+, <a href="https://github.com/omarhemaia" class="user-mention">omarhemaia</a>,
+<a href="https://github.com/Mathias-Boulay" class="user-mention">Mathias-Boulay</a>,
+<a href="https://github.com/osfunapps" class="user-mention">osfunapps</a>,
+<a href="https://github.com/eziosoft" class="user-mention">eziosoft</a>,
+<a href="https://github.com/scottbarnesg" class="user-mention">scottbarnesg</a>,
+<a href="https://github.com/tomerlevi444" class="user-mention">tomerlevi444</a>,
+<a href="https://github.com/BenDelGreco" class="user-mention">BenDelGreco</a>,
+<a href="https://github.com/dooully" class="user-mention">dooully</a>,
+<a href="https://github.com/jonyhunter" class="user-mention">jonyhunter</a>,
+<a href="https://github.com/lukkass222" class="user-mention">lukkass222</a> 
 and <a href="https://github.com/GijsGoudzwaard" class="user-mention">GijsGoudzwaard</a> for contributing.
