@@ -156,11 +156,30 @@ Minimum API level is 16 (Android 4.1.x - Jelly Bean) which cover 99.5% of the An
 
 ## Download
 ### Gradle
-```java
+
+**Step 1.** Add the JitPack repository to your build file
+
+Add it in your root build.gradle at the end of repositories:
+
+```Gradle
+	dependencyResolutionManagement {
+		repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
+		repositories {
+			mavenCentral()
+			maven { url 'https://jitpack.io' }
+		}
+	}
+```
+
+**Step 2.** Add the dependency
+
+```Gradle
 dependencies {
 	        implementation 'com.github.lukkass222:virtual-joystick-android:1.13.5'
 	}
 ```
+
+[![](https://jitpack.io/v/lukkass222/virtual-joystick-android.svg)](https://jitpack.io/#lukkass222/virtual-joystick-android)
 
 ## Contributing
 If you would like to contribute code, you can do so through GitHub by forking the repository and sending a pull request.
