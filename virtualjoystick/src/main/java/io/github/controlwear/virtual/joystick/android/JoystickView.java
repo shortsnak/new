@@ -71,7 +71,7 @@ public class JoystickView extends View {
 
     // DRAWING
     private final Paint mPaintCircleButton;
-    private final Paint mPaintCircleBorder;
+    private final Paint mPaintBorder;
     private final Paint mPaintBackground;
 
     private Drawable mButtonDrawable;
@@ -116,6 +116,7 @@ public class JoystickView extends View {
     // SIZE
     private int mButtonRadius;
     private int mBorderRadius;
+    private int mBorderWidth, mBorderHeight;
 
 
     /** Alpha of the border (to use when changing color dynamically) */
@@ -123,6 +124,11 @@ public class JoystickView extends View {
 
     /** Based on mBorderRadius but a bit smaller (minus half the stroke size of the border) */
     private float mBackgroundRadius;
+
+    /**Based on mBorderWidth/Height but a bit smaller (minus half the stroke size of the border) */
+    private float mBackgroundWidth, mBackgroundHeight;
+    
+    public boolean useRectangle =false;
 
     /** Listener used to dispatch OnMove event */
     private OnMoveListener mCallback;
@@ -226,14 +232,14 @@ public class JoystickView extends View {
         mPaintCircleButton.setColor(buttonColor);
         mPaintCircleButton.setStyle(Paint.Style.FILL);
 
-        mPaintCircleBorder = new Paint();
-        mPaintCircleBorder.setAntiAlias(true);
-        mPaintCircleBorder.setColor(borderColor);
-        mPaintCircleBorder.setStyle(Paint.Style.STROKE);
-        mPaintCircleBorder.setStrokeWidth(borderWidth);
+        mPaintBorder = new Paint();
+        mPaintBorder.setAntiAlias(true);
+        mPaintBorder.setColor(borderColor);
+        mPaintBorder.setStyle(Paint.Style.STROKE);
+        mPaintBorder.setStrokeWidth(borderWidth);
 
         if (borderColor != Color.TRANSPARENT) {
-            mPaintCircleBorder.setAlpha(mBorderAlpha);
+            mPaintBorder.setAlpha(mBorderAlpha);
         }
 
         mPaintBackground = new Paint();
@@ -259,12 +265,30 @@ public class JoystickView extends View {
      */
     @Override
     protected void onDraw(Canvas canvas) {
-        // Draw the background
-        canvas.drawCircle(mFixedCenterX, mFixedCenterY, mBackgroundRadius, mPaintBackground);
+        if (useRectangle) {
+            // Draw the rectangle background
+            canvas.drawRect(
+                    mFixedCenterX - mBackgroundWidth / 2f,
+                    mFixedCenterY - mBackgroundHeight / 2f,
+                    mFixedCenterX + mBackgroundWidth / 2f,
+                    mFixedCenterY + mBackgroundHeight / 2f,
+                    mPaintBackground);
 
-        // Draw the circle border
-        canvas.drawCircle(mFixedCenterX, mFixedCenterY, mBorderRadius, mPaintCircleBorder);
+            // Draw the rectangle border
+            canvas.drawRect(
+                    mFixedCenterX - mBorderWidth / 2f,
+                    mFixedCenterY - mBorderHeight / 2f,
+                    mFixedCenterX + mBorderWidth / 2f,
+                    mFixedCenterY + mBorderHeight / 2f,
+                    mPaintBorder);
+        }else {
+            // Draw the background
+            canvas.drawCircle(mFixedCenterX, mFixedCenterY, mBackgroundRadius, mPaintBackground);
 
+            // Draw the circle border
+            canvas.drawCircle(mFixedCenterX, mFixedCenterY, mBorderRadius, mPaintBorder);
+        }
+        
         // Draw the button from image
         if (mButtonDrawable != null) {
             int x = mPosX + mFixedCenterX - mCenterX - mButtonRadius;
@@ -303,7 +327,13 @@ public class JoystickView extends View {
         int d = Math.min(w, h);
         mButtonRadius = (int) (d / 2 * mButtonSizeRatio);
         mBorderRadius = (int) (d / 2 * mBackgroundSizeRatio);
-        mBackgroundRadius = mBorderRadius - (mPaintCircleBorder.getStrokeWidth() / 2);
+        mBackgroundRadius = mBorderRadius - (mPaintBorder.getStrokeWidth() / 2);
+       
+        mBorderWidth  = (int) (w * mBackgroundSizeRatio);
+        mBorderHeight = (int) (h * mBackgroundSizeRatio);
+        
+        mBackgroundWidth = mBorderWidth - (mPaintBorder.getStrokeWidth() / 2);
+        mBackgroundHeight = mBorderHeight - (mPaintBorder.getStrokeWidth() / 2);
     }
 
 
@@ -379,7 +409,7 @@ public class JoystickView extends View {
         if (event.getAction() == MotionEvent.ACTION_DOWN) {
             // Check if the pointer is inside the original joystick zone
 
-            if(Math.hypot(Math.abs(mFixedCenterX - event.getX()), Math.abs(mFixedCenterY - event.getY())) > mBackgroundRadius + mPaintCircleBorder.getStrokeWidth())
+            if(Math.hypot(Math.abs(mFixedCenterX - event.getX()), Math.abs(mFixedCenterY - event.getY())) > mBackgroundRadius + mPaintBorder.getStrokeWidth())
                 return false; // outside of the round joystick
             
             isPressed = true;
@@ -398,18 +428,36 @@ public class JoystickView extends View {
                 mCenterY = mPosY;
             }
         }
-
-        double abs = Math.sqrt((mPosX - mCenterX) * (mPosX - mCenterX)
-                + (mPosY - mCenterY) * (mPosY - mCenterY));
-
-        // (abs > mBorderRadius) means button is too far therefore we limit to border
-        // (buttonStickBorder && abs != 0) means wherever is the button we stick it to the border except when abs == 0
-        if (abs > mBorderRadius || (mButtonStickToBorder && abs != 0)) {
-            mPosX = (int) ((mPosX - mCenterX) * mBorderRadius / abs + mCenterX);
-            mPosY = (int) ((mPosY - mCenterY) * mBorderRadius / abs + mCenterY);
-        }
         
+        if (useRectangle) {
+            if (mPosX - mCenterX > mBorderWidth/2)
+            {
+                mPosX = mCenterX + mBorderWidth/2;
+            }
+            if (mCenterX - mPosX > mBorderWidth/2)
+            {
+                mPosX = mCenterX - mBorderWidth/2;
+            }
+            if (mPosY - mCenterY > mBorderHeight/2)
+            {
+                mPosY = mCenterY + mBorderHeight/2;
+            }
+            if (mCenterY - mPosY > mBorderHeight/2)
+            {
+                mPosY = mCenterY - mBorderHeight/2;
+            }
+            
+        }else {
+            double abs = Math.sqrt((mPosX - mCenterX) * (mPosX - mCenterX)
+                    + (mPosY - mCenterY) * (mPosY - mCenterY));
 
+            // (abs > mBorderRadius) means button is too far therefore we limit to border
+            // (buttonStickBorder && abs != 0) means wherever is the button we stick it to the border except when abs == 0
+            if (abs > mBorderRadius || (mButtonStickToBorder && abs != 0)) {
+                mPosX = (int) ((mPosX - mCenterX) * mBorderRadius / abs + mCenterX);
+                mPosY = (int) ((mPosY - mCenterY) * mBorderRadius / abs + mCenterY);
+            }
+        }
         // Events are instantaneous now
         notifyOnMove(getAngle(), getStrength(), event);
 
@@ -455,6 +503,14 @@ public class JoystickView extends View {
         return (int) Math.round(100 * Math.sqrt((mPosX - mCenterX)
                 * (mPosX - mCenterX) + (mPosY - mCenterY)
                 * (mPosY - mCenterY)) / mBorderRadius);
+    }
+    
+    private int getDelX() {
+        return (int) (100 * (mPosX-mCenterX)/(mBorderWidth/2.0));
+    }
+
+    private int getDelY() {
+        return (int) (100 * (mPosY-mCenterY)/(mBorderHeight/2.0));
     }
     
     /**
@@ -604,9 +660,9 @@ public class JoystickView extends View {
      * @param color the color of the border
      */
     public void setBorderColor(int color) {
-        mPaintCircleBorder.setColor(color);
+        mPaintBorder.setColor(color);
         if (color != Color.TRANSPARENT) {
-            mPaintCircleBorder.setAlpha(mBorderAlpha);
+            mPaintBorder.setAlpha(mBorderAlpha);
         }
         invalidate();
     }
@@ -617,7 +673,7 @@ public class JoystickView extends View {
      */
     public void setBorderAlpha(int alpha) {
         mBorderAlpha = alpha;
-        mPaintCircleBorder.setAlpha(alpha);
+        mPaintBorder.setAlpha(alpha);
         invalidate();
     }
 
@@ -638,8 +694,12 @@ public class JoystickView extends View {
      * @param width the width of the border
      */
     public void setBorderWidth(int width) {
-        mPaintCircleBorder.setStrokeWidth(width);
+        mPaintBorder.setStrokeWidth(width);
         mBackgroundRadius = mBorderRadius - (width / 2.0f);
+       
+        mBackgroundWidth = mBorderWidth - (width / 2f);
+        mBackgroundHeight = mBorderHeight - (width / 2f);
+
         invalidate();
     }
 
@@ -713,10 +773,9 @@ public class JoystickView extends View {
      */
     public void setAutoReCenterButton(boolean autoReCenter) {
         mAutoReCenterButton = autoReCenter;
-        // 
-        if (mAutoReCenterButton) {
+        
+        if (mAutoReCenterButton)
             resetButtonPosition();
-        }
        
         invalidate();
     }
