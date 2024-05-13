@@ -1,6 +1,5 @@
 # virtual-joystick-android
 
-[![](https://jitpack.io/v/BenDelGreco/virtual-joystick-android.svg)](https://jitpack.io/#BenDelGreco/virtual-joystick-android)
 
 **v1.13.5** _(New version - [support custom images](#image), button & background size, limited direction, normalized coordinate, alpha border, Rectangle or circle support)_
 
