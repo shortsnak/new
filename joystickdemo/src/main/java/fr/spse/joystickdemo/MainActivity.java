@@ -24,15 +24,15 @@ public class MainActivity extends AppCompatActivity {
 
         checkBoxH.setOnCheckedChangeListener((compoundButton, b) -> {
             checkBoxV.setChecked(false);
-            joystick.setButtonDirection(b ? JoystickView.BUTTON_DIRECTION_HORIZONTAL : 0);
+            joystick.setAxisMotion(b ? JoystickView.AXIS_HORIZONTAL : 0);
         });
 
         checkBoxV.setOnCheckedChangeListener((compoundButton, b) -> {
             checkBoxH.setChecked(false);
-            joystick.setButtonDirection(b ? JoystickView.BUTTON_DIRECTION_VERTICAL : 0);
+            joystick.setAxisMotion(b ? JoystickView.AXIS_VERTICAL : 0);
         });
 
-        joystick.setButtonDirection(JoystickView.BUTTON_DIRECTION_BOTH);
+        joystick.setAxisMotion(JoystickView.AXIS_BOTH);
 
 
         Switch Switch = findViewById(R.id.switch_use_Rectangle);
@@ -54,13 +54,14 @@ public class MainActivity extends AppCompatActivity {
         TextView normalized = findViewById(R.id.normalized);
         TextView del = findViewById(R.id.del);
         TextView mStrength = findViewById(R.id.strength);
-        
+        TextView mDirection = findViewById(R.id.stickDirection);
         joystick.setOnMoveListener(new JoystickView.OnMoveListener() {
             
             @Override
             public void onMove(int angle, int strength, MotionEvent event) {
                 mStrength.setText(strength + "%");
-                
+                mDirection.setText(joystick.getPosition() + "");
+                int I =JoystickView.SCROLL_AXIS_HORIZONTAL;
                 normalized.setText(
                         String.format("norm "+"x%03d:y%03d",
                                 joystick.getNormalizedX(),

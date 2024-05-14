@@ -116,11 +116,11 @@ joystick.setEnabled(false); // disabled the joystick
 joystick.isEnabled(); // return enabled state
 ```
 
-#### ButtonDirection
+#### AxisMotion
 By default the button can move in both direction X,Y (regular behavior), but we can limit the movement through one axe horizontal or vertical.
 ```xml
 <...
-    custom:JV_buttonDirection="horizontal"/>
+    custom:JV_axisMotion="horizontal"/>
 ```
 In the layout file (xml), this option can be set to `horizontal`, `vertical` or `both`.
 
@@ -130,7 +130,16 @@ We can also set this option in the Java file by setting an integer value:
 - `BUTTON_DIRECTION_BOTH` for both (which is the default option)
 
 ```java
-joystick.setButtonDirection(JoystickView.BUTTON_DIRECTION_VERTICAL); // vertical
+joystick.setAxisMotion(JoystickView.BUTTON_DIRECTION_VERTICAL); // vertical
+```
+
+#### Position
+The joystick is divided into eight positions + `none`
+
+![Alt text](/misc/virtual-joystick-positions.png?raw=true " stick positions")
+
+```java
+joystick.getPosition() == JoystickView.RIGHT_UP; 
 ```
 
 #### Deadzone
@@ -214,6 +223,7 @@ Also, thanks to <a href="https://github.com/Bernix01" class="user-mention">Berni
 <a href="https://github.com/FenixGit" class="user-mention">FenixGit</a>,
 <a href="https://github.com/AlexanderShniperson" class="user-mention">AlexanderShniperson</a>
 , <a href="https://github.com/omarhemaia" class="user-mention">omarhemaia</a>,
+<a href="https://github.com/mstniy" class="user-mention">mstniy</a>
 <a href="https://github.com/Mathias-Boulay" class="user-mention">Mathias-Boulay</a>,
 <a href="https://github.com/osfunapps" class="user-mention">osfunapps</a>,
 <a href="https://github.com/eziosoft" class="user-mention">eziosoft</a>,

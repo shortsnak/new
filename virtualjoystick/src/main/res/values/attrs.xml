@@ -32,7 +32,7 @@
 
         <attr name="JV_deadzone" format="fraction" />
 
-        <attr name="JV_buttonDirection">
+        <attr name="JV_axisMotion">
             <flag name="horizontal" value="-1"/>
             <flag name="both" value="0"/>
             <flag name="vertical" value="1"/>
