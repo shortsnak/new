@@ -155,8 +155,8 @@ Or better, if you just want a simple Joystick (and few other cool stuff) as a co
 
 ## Demo
 For those who want more than just a snippet, here is the demo :
-- [Basic two joysticks ](https://github.com/lukkass222/virtual-joystick-android/tree/master/joystickdemo_2) [similar to screenshot](#image).
-- [Basic joystick ](https://github.com/lukkass222/virtual-joystick-android/tree/master/joystickdemo) [similar to screenshot](#Rectangle).
+- [Basic two joysticks ](https://github.com/lukkass222/virtual-joystick-android/tree/master/joystickdemo_2) - [similar to screenshot](#image).
+- [Basic joystick ](https://github.com/lukkass222/virtual-joystick-android/tree/master/joystickdemo) - [similar to screenshot](#Rectangle).
 
 
 ## Required
