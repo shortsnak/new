@@ -552,10 +552,10 @@ public class JoystickView extends View {
     public static final int UP_RIGHT = 2;
     public static final int UP_LEFT = 3;
     public final static int LEFT_UP = 4;
-    public final static int LEFT_BUTTON = 5;
+    public final static int LEFT_DOWN = 5;
     public final static int DOWN_LEFT = 6;
     public final static int DOWN_RIGHT = 7;
-    public final static int RIGHT_BOTTOM = 8;
+    public final static int RIGHT_DOWN = 8;
 
     /**
      * @return return stick position
@@ -564,10 +564,10 @@ public class JoystickView extends View {
      * {@link JoystickView#UP_RIGHT},
      * {@link JoystickView#UP_LEFT},
      * {@link JoystickView#LEFT_UP},
-     * {@link JoystickView#LEFT_BUTTON},
+     * {@link JoystickView#LEFT_DOWN},
      * {@link JoystickView#DOWN_LEFT},
      * {@link JoystickView#DOWN_RIGHT},
-     * {@link JoystickView#RIGHT_BOTTOM},
+     * {@link JoystickView#RIGHT_DOWN},
      */
     public int getPosition() {
         if ((mPosY - mCenterY) == 0 && (mPosX - mCenterX) == 0) {
