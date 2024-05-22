@@ -44,7 +44,7 @@ public class JoystickView extends View {
     /**
      * Used to allow a slight move without cancelling MultipleLongPress
      */
-    private static final int DEFAULT_DEADZONE = 10;
+    private static final int DEFAULT_DEADZONE = 1;
 
     /** Default color for button */
     private static final int DEFAULT_COLOR_BUTTON = Color.BLACK;
@@ -66,10 +66,10 @@ public class JoystickView extends View {
 
     /** Default behavior to fixed center (not auto-defined) */
     private static final boolean DEFAULT_FIXED_CENTER = true;
-    
+
     /** Default behavior to auto re-center button (automatically recenter the button) */
     private static final boolean DEFAULT_AUTO_RECENTER_BUTTON = true;
-    
+
     /** Default behavior to button stickToBorder (button stay on the border) */
     private static final boolean DEFAULT_BUTTON_STICK_TO_BORDER = false;
 
@@ -87,13 +87,15 @@ public class JoystickView extends View {
     private float mBackgroundSizeRatio;
 
     // COORDINATE
-    private int mPosX = 0;
-    private int mPosY = 0;
-    private int mCenterX = 0;
-    private int mCenterY = 0;
+    private float mLastPosX = 0;
+    private float mLastPosY = 0;
+    private float mPosX = 0;
+    private float mPosY = 0;
+    private float mCenterX = 0;
+    private float mCenterY = 0;
 
-    private int mFixedCenterX = 0;
-    private int mFixedCenterY = 0;
+    private float mFixedCenterX = 0;
+    private float mFixedCenterY = 0;
 
     /** Used to adapt behavior whether it is auto-defined center (false) or fixed center (true) */
     private boolean mFixedCenter;
@@ -120,7 +122,8 @@ public class JoystickView extends View {
     // SIZE
     private int mButtonRadius;
     private float mBorderRadius;
-    private int mBorderWidth, mBorderHeight;
+    private float mBorderWidth;
+    private float mBorderHeight;
 
 
     /** Alpha of the border (to use when changing color dynamically) */
@@ -131,7 +134,7 @@ public class JoystickView extends View {
 
     /**Based on mBorderWidth/Height but a bit smaller (minus half the stroke size of the border) */
     private float mBackgroundWidth, mBackgroundHeight;
-    
+
     private boolean isRectangle;
 
     /** Listener used to dispatch OnMove event */
@@ -141,7 +144,7 @@ public class JoystickView extends View {
     private int pointerID = -1;
 
     /** The deadzone for the joystick from 0 to 100%*/
-    private int mDeadzone;
+    private float mDeadzone;
 
 
     /**
@@ -153,7 +156,7 @@ public class JoystickView extends View {
     private int mAxisMotionType;
 
     /*
-    * Detect if joystick has been pressed, even if strength and angle are 0
+     * Detect if joystick has been pressed, even if strength and angle are 0
      */
     private boolean isPressed = false;
     
@@ -206,7 +209,6 @@ public class JoystickView extends View {
         int borderColor;
         int backgroundColor;
         int borderWidth;
-        float _deadzone;
         try {
             buttonColor = styledAttributes.getColor(R.styleable.JoystickView_JV_buttonColor, DEFAULT_COLOR_BUTTON);
             borderColor = styledAttributes.getColor(R.styleable.JoystickView_JV_borderColor, DEFAULT_COLOR_BORDER);
@@ -217,7 +219,7 @@ public class JoystickView extends View {
             mAutoReCenterButton = styledAttributes.getBoolean(R.styleable.JoystickView_JV_autoReCenterButton, DEFAULT_AUTO_RECENTER_BUTTON);
             mButtonStickToBorder = styledAttributes.getBoolean(R.styleable.JoystickView_JV_buttonStickToBorder, DEFAULT_BUTTON_STICK_TO_BORDER);
             mButtonDrawable = styledAttributes.getDrawable(R.styleable.JoystickView_JV_buttonImage);
-            _deadzone = styledAttributes.getFraction(R.styleable.JoystickView_JV_deadzone, 100, 100, DEFAULT_DEADZONE);
+            mDeadzone = styledAttributes.getFraction(R.styleable.JoystickView_JV_deadzone, 10, 10, DEFAULT_DEADZONE);
             mEnabled = styledAttributes.getBoolean(R.styleable.JoystickView_JV_enabled, true);
             mButtonSizeRatio = styledAttributes.getFraction(R.styleable.JoystickView_JV_buttonSizeRatio, 1, 1, 0.25f);
             mBackgroundSizeRatio = styledAttributes.getFraction(R.styleable.JoystickView_JV_backgroundSizeRatio, 1, 1, 0.75f);
@@ -231,8 +233,8 @@ public class JoystickView extends View {
 
         // Initialize the drawing according to attributes
         
-        mDeadzone = Math.round(_deadzone);
         
+        //   mDeadzone = Math.round(_deadzone);
         mPaintCircleButton = new Paint();
         mPaintCircleButton.setAntiAlias(true);
         mPaintCircleButton.setColor(buttonColor);
@@ -256,8 +258,8 @@ public class JoystickView extends View {
 
     private void initPosition() {
         // get the center of view to position circle
-        mFixedCenterX = mCenterX = mPosX = getWidth() / 2;
-        mFixedCenterY = mCenterY = mPosY = getHeight() / 2;
+        mFixedCenterX = mCenterX = mPosX = getWidth() / 2f;
+        mFixedCenterY = mCenterY = mPosY = getHeight() / 2f;
     }
 
     public boolean isVisible() {
@@ -286,7 +288,7 @@ public class JoystickView extends View {
                     mFixedCenterX + mBorderWidth / 2f,
                     mFixedCenterY + mBorderHeight / 2f,
                     mPaintBorder);
-        }else {
+        } else {
             // Draw the background
             canvas.drawCircle(mFixedCenterX, mFixedCenterY, mBackgroundRadius, mPaintBackground);
 
@@ -300,8 +302,8 @@ public class JoystickView extends View {
        */
         // Draw the button from image
         if (mButtonDrawable != null) {
-            int x = mPosX + mFixedCenterX - mCenterX - mButtonRadius;
-            int y = mPosY + mFixedCenterY - mCenterY - mButtonRadius;
+            int x = Math.round(mPosX + mFixedCenterX - mCenterX - mButtonRadius);
+            int y = Math.round(mPosY + mFixedCenterY - mCenterY - mButtonRadius);
             mButtonDrawable.setBounds(x, y, x + mButtonRadius * 2, y + mButtonRadius * 2);
             mButtonDrawable.draw(canvas);
         }
@@ -337,8 +339,8 @@ public class JoystickView extends View {
         mBorderRadius = (d / 2f * mBackgroundSizeRatio);
         mBackgroundRadius = mBorderRadius - (mPaintBorder.getStrokeWidth() / 2);
 
-        mBorderWidth = (int) (mAxisMotionType > AXIS_BOTH ? d * mButtonSizeRatio : w * mBackgroundSizeRatio);// if vertical
-        mBorderHeight = (int) (mAxisMotionType < AXIS_BOTH ? d * mButtonSizeRatio : h * mBackgroundSizeRatio);// if horizontal
+        mBorderWidth = (mAxisMotionType > AXIS_BOTH ? d * mButtonSizeRatio : w * mBackgroundSizeRatio);// if vertical
+        mBorderHeight = (mAxisMotionType < AXIS_BOTH ? d * mButtonSizeRatio : h * mBackgroundSizeRatio);// if horizontal
         mBackgroundWidth = mBorderWidth - mPaintBorder.getStrokeWidth() / 2;
         mBackgroundHeight = mBorderHeight - mPaintBorder.getStrokeWidth() / 2;
     }
@@ -385,12 +387,15 @@ public class JoystickView extends View {
         // if disabled we don't move the joystick
         if (!mEnabled) return false;
 
+        boolean isHorizontal = mAxisMotionType < AXIS_BOTH;
+        boolean isVertical = mAxisMotionType > AXIS_BOTH;
+
         // to move the button according to the finger coordinate
         // (or limited to one axe according to direction option
         int pointerIndex;
         if ((pointerIndex = event.findPointerIndex(pointerID)) != -1) {
-            mPosY = mAxisMotionType < AXIS_BOTH ? mCenterY : (int) event.getY(pointerIndex); // if horizontal
-            mPosX = mAxisMotionType > AXIS_BOTH ? mCenterX : (int) event.getX(pointerIndex); // if vertical
+            mPosY = isHorizontal ? mCenterY : event.getY(pointerIndex); // if horizontal
+            mPosX = isVertical ? mCenterX : event.getX(pointerIndex); // if vertical
         }
 
         if (event.getAction() == MotionEvent.ACTION_POINTER_UP) {
@@ -432,9 +437,17 @@ public class JoystickView extends View {
             // Map the pointerID
             pointerID = event.getPointerId(event.getActionIndex());
 
-            mPosY = mAxisMotionType < AXIS_BOTH ? mCenterY : (int) event.getY(); // if horizontal
-            mPosX = mAxisMotionType > AXIS_BOTH ? mCenterX : (int) event.getX(); // if vertical
+            mPosY = isHorizontal ? mCenterY : event.getY(); // if horizontal
+            mPosX = isVertical ? mCenterX : event.getX(); // if vertical
         }
+
+        if (Math.abs(mLastPosX - mPosX) < mDeadzone)
+            if (Math.abs(mLastPosY - mPosY) < mDeadzone) {
+                return false;
+            }
+
+        mLastPosX = mPosX;
+        mLastPosY = mPosY;
 
         // handle first touch and long press with multiple touch only
         // when the first touch occurs we update the center (if set to auto-defined center)
@@ -468,8 +481,8 @@ public class JoystickView extends View {
         // (_radius > mBorderRadius) means button is too far therefore we limit to border
         // (buttonStickBorder && _radius != 0) means wherever is the button we stick it to the border except when _radius == 0
         if (_radius > _maxRadius || (mButtonStickToBorder && _radius != 0)) {
-            mPosX = (int) (xPos * _maxRadius / _radius + mCenterX);
-            mPosY = (int) (yPos * _maxRadius / _radius + mCenterY);
+            mPosX = (float) (xPos * _maxRadius / _radius + mCenterX);
+            mPosY = (float) (yPos * _maxRadius / _radius + mCenterY);
         }
 
         // Events are instantaneous now
@@ -542,7 +555,7 @@ public class JoystickView extends View {
         } else
             strength = (int) Math.round(100 * Math.hypot(mPosX - mCenterX, mPosY - mCenterY) / mBorderRadius);
 
-        if (strength < mDeadzone) strength = 0;
+        //  if (strength < mDeadzone) strength = 0;
 
         return strength;
     }
@@ -714,7 +727,7 @@ public class JoystickView extends View {
         return mBorderAlpha;
     }
 
-    public int getDeadzone() {
+    public float getDeadzone() {
         return mDeadzone;
     }
 
@@ -732,8 +745,8 @@ public class JoystickView extends View {
      * Sets the angle following the 360° counter-clock protractor rules.
      */
     public void setAngle(int angle) {
-        mPosX = (int) Math.round((getStrength() * 0.01 * Math.cos(Math.toRadians(angle))) + mCenterX);
-        mPosY = (int) Math.round((getStrength() * 0.01 * Math.sin(Math.toRadians(angle))) + mCenterY);
+        mPosX =  Math.round((getStrength() * 0.01 * Math.cos(Math.toRadians(angle))) + mCenterX);
+        mPosY =  Math.round((getStrength() * 0.01 * Math.sin(Math.toRadians(angle))) + mCenterY);
         invalidate();
     }
 
@@ -741,8 +754,8 @@ public class JoystickView extends View {
      * Sets the strength as a percentage of the distance between the center and the border.
      */
     public void setStrength(int strength) {
-        mPosX = (int) Math.round((strength * 0.01 * Math.cos(Math.toRadians(getAngle()))) + mCenterX);
-        mPosY = (int) Math.round((strength * 0.01 * Math.sin(Math.toRadians(getAngle()))) + mCenterY);
+        mPosX =  Math.round((strength * 0.01 * Math.cos(Math.toRadians(getAngle()))) + mCenterX);
+        mPosY =  Math.round((strength * 0.01 * Math.sin(Math.toRadians(getAngle()))) + mCenterY);
         invalidate();
     }
 
@@ -920,8 +933,6 @@ public class JoystickView extends View {
      * @param deadzone The deadzone, from 0-100. Strengths lower than it get reduced to 0.
      */
     public void setDeadzone(int deadzone) {
-        if (deadzone < 0) deadzone = 0;
-        if (deadzone > 100) deadzone = 100;
         mDeadzone = deadzone;
     }
 

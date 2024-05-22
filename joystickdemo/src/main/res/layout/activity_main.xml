@@ -10,7 +10,7 @@
             android:id="@+id/joystick"
             android:layout_width="0dp"
             android:layout_height="0dp"
-            app:JV_deadzone="1%"
+            app:JV_deadzone="10%"
             app:JV_buttonColor="@android:color/holo_orange_dark"
             app:JV_backgroundColor="@color/purple_200"
             app:JV_borderColor="@color/purple_500"
