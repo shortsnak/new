@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        xmlns:tools="http://schemas.android.com/tools"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:context=".MainActivity">
+
+    <io.github.controlwear.virtual.joystick.android.JoystickView
+            android:id="@+id/joystick"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            app:JV_buttonSizeRatio="25%"
+            app:JV_deadzone="10%"
+            app:JV_buttonColor="@android:color/holo_orange_dark"
+            app:JV_backgroundColor="@color/purple_200"
+            app:JV_borderColor="@color/purple_500"
+            app:layout_constraintEnd_toStartOf="@+id/switch_fixed_center"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toEndOf="@+id/horizontal"
+            app:layout_constraintTop_toBottomOf="@+id/vertical" />
+
+    <Switch
+            android:id="@+id/switch_fixed_center"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Enable fixed centering"
+            app:layout_constraintBottom_toTopOf="@+id/switch_sticky_border"
+            app:layout_constraintStart_toStartOf="@+id/switch_auto_center"
+            app:layout_constraintTop_toBottomOf="@+id/switch_auto_center"
+            app:layout_constraintEnd_toEndOf="parent" />
+
+    <Switch
+            android:id="@+id/switch_use_Rectangle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Enable Rectangle"
+            android:visibility="visible"
+            app:layout_constraintBottom_toTopOf="@+id/switch_auto_center"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+    <Switch
+            android:id="@+id/switch_auto_center"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Enable auto centering"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintBottom_toTopOf="@+id/switch_fixed_center"
+            app:layout_constraintStart_toStartOf="@+id/switch_use_Rectangle"
+            app:layout_constraintTop_toBottomOf="@+id/switch_use_Rectangle"
+            app:layout_constraintHorizontal_bias="1.0" />
+
+    <Switch
+            android:id="@+id/switch_sticky_border"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Enable sticky border"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="@+id/switch_fixed_center"
+            app:layout_constraintTop_toBottomOf="@+id/switch_fixed_center"
+           />
+
+    <CheckBox
+            android:text="horizontal"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/horizontal"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+    <CheckBox
+            android:text="vertical"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/vertical"
+
+
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toStartOf="@+id/switch_use_Rectangle" />
+
+    <TextView
+            
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/normalized"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+            
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/del"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/normalized" />
+
+    <TextView
+            
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/strength"
+            app:layout_constraintTop_toBottomOf="@+id/del"
+            app:layout_constraintStart_toStartOf="parent" />
+
+    <TextView
+            android:text="0"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/stickDirection"
+            app:layout_constraintTop_toBottomOf="@+id/strength"
+            app:layout_constraintStart_toStartOf="parent"
+            tools:layout_editor_absoluteY="88dp" />
+
+</android.support.constraint.ConstraintLayout>

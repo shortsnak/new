@@ -1,1 +1,3 @@
 include ':virtualjoystick'
+include ':joystickdemo'
+include ':joystickdemo_2'

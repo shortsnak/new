@@ -1,6 +1,7 @@
 # virtual-joystick-android
 
-**v1.10.1** _(New version - [support custom images](#image), button & background size, limited direction, normalized coordinate, alpha border)_
+
+**v1.13.5** _(New version - [support custom images](#image), button & background size, limited direction, normalized coordinate, alpha border, Rectangle or circle support)_
 
 _I created this very simple library as a learning process and I have been inspired by this project [JoystickView](https://github.com/zerokol/JoystickView) (the author is a genius!)_
 
@@ -22,7 +23,7 @@ protected void onCreate(Bundle savedInstanceState) {
     JoystickView joystick = (JoystickView) findViewById(R.id.joystickView);
     joystick.setOnMoveListener(new JoystickView.OnMoveListener() {
         @Override
-        public void onMove(int angle, int strength) {
+        public void onMove(int angle, int strength, MotionEvent event) {
             // do whatever you want
         }
     });
@@ -32,14 +33,10 @@ The **angle** follow the rules of a simple **counter-clock** protractor. The **s
 
 ![Alt text](/misc/virtual-joystick.png?raw=true "Explanation")
 
-By default the **refresh rate** to get the data is **20/sec (every 50ms)**. If you want more or less just set the listener with one more parameters to set the refresh rate in milliseconds.
-```java
-joystick.setOnMoveListener(new JoystickView.OnMoveListener() { ... }, 17); // around 60/sec
-```
 
 ### Attributes
 
-You can customize the joystick according to these attributes `JV_buttonImage`, `JV_buttonColor`, `JV_buttonSizeRatio`, `JV_borderColor`, `JV_borderAlpha`, `JV_borderWidth`, `JV_backgroundColor`, `JV_backgroundSizeRatio`, `JV_fixedCenter`, `JV_autoReCenterButton`, `JV_buttonStickToBorder`, `JV_enabled` and `JV_buttonDirection`
+You can customize the joystick according to these attributes `JV_useRectangle`,`JV_axisToCenter`, `JV_buttonImage`, `JV_buttonColor`, `JV_buttonSizeRatio`, `JV_borderColor`, `JV_borderAlpha`, `JV_borderWidth`, `JV_backgroundColor`, `JV_backgroundSizeRatio`, `JV_fixedCenter`, `JV_autoReCenterButton`, `JV_buttonStickToBorder`, `JV_enabled` and `JV_buttonDirection`
 
 If you specified `JV_buttonImage` you don't need `JV_buttonColor`
 
@@ -70,13 +67,18 @@ If you want a more customized joystick, you can use `JV_buttonImage` and the reg
 
 ![Alt text](/misc/android-virtual-joystick-custom-image.png?raw=true "Left joystick with custom image")
 
+#### Rectangle
+It is possible to combine several configurations to create something new, such as a linear bar
+
+![Alt text](/misc/virtual-joystick-android-rectangle.png?raw=true "rectangle joystick with vertical axis")
+
 #### SizeRatio
 We can change the default size of the button and background.
 The size is calculated as a percentage of the total width/height.
 
-By default, the button is 25% (0.25) and the background 75% (0.25), as the first screenshot above.
+By default, the button is 25% (25) and the background 75% (75), as the first screenshot above.
 
-If the total (background + button) is above 1.0, the button will probably be a bit cut when on the border.
+If the total (background + button) is above 100%, the button will probably be a bit cut when on the border.
 
 ```xml
 <...
@@ -86,11 +88,9 @@ If the total (background + button) is above 1.0, the button will probably be a b
 ```
 
 ```java
-joystick.setBackgroundSizeRatio(0.5);
-joystick.setButtonSizeRatio(0.1);
+joystick.setBackgroundSizeRatio(50);
+joystick.setButtonSizeRatio(10);
 ```
-
-_The background size is not working for a custom picture._
 
 #### FixedCenter or Not? (and auto re-center)
 If you don’t set up this parameter, it will be FixedCenter by default, which is the regular behavior.
@@ -116,48 +116,75 @@ joystick.setEnabled(false); // disabled the joystick
 joystick.isEnabled(); // return enabled state
 ```
 
-#### ButtonDirection
+#### AxisMotion
 By default the button can move in both direction X,Y (regular behavior), but we can limit the movement through one axe horizontal or vertical.
 ```xml
 <...
-    custom:JV_buttonDirection="horizontal"/>
+    custom:JV_axisMotion="horizontal"/>
 ```
 In the layout file (xml), this option can be set to `horizontal`, `vertical` or `both`.
 
 We can also set this option in the Java file by setting an integer value:
-- any negative value (e.g. -1) for the horizontal axe
-- any positive value (e.g. 1) for the vertical axe
-- zero (0) for both (which is the default option)
+- `BUTTON_DIRECTION_HORIZONTAL` for the horizontal axe
+- `BUTTON_DIRECTION_VERTICAL` for the vertical axe
+- `BUTTON_DIRECTION_BOTH` for both (which is the default option)
 
 ```java
-joystick.setButtonDirection(1); // vertical
+joystick.setAxisMotion(JoystickView.BUTTON_DIRECTION_VERTICAL); // vertical
 ```
 
-### Wearable
-If you use this library in Wearable app, you will probably disable the Swipe-To-Dismiss Gesture and implement the Long Press to Dismiss Pattern, which could be a problem for a Joystick Pattern (because we usually let the user touch the joystick as long as she/he wants), in that case you can set another convenient listener: `OnMultipleLongPressListener` which will be invoked only with multiple pointers (at least two fingers) instead of one.
+#### Position
+The joystick is divided into eight positions + `none`
+
+![Alt text](/misc/virtual-joystick-positions.png?raw=true " stick positions")
+
 ```java
-joystick.setOnMultiLongPressListener(new JoystickView.OnMultipleLongPressListener() {
-    @Override
-    public void onMultipleLongPress() {
-        ... // eg. mDismissOverlay.show();
-    }
-});
+joystick.getPosition() == JoystickView.RIGHT_UP; 
 ```
+
+#### Deadzone
+Most joysticks have an inner deadzone, else games would feel hypersensitive in their inputs.
+By default, the deadzone is at 10% strength.
+To change the deadzone, you can specify the following in xml.
+```xml
+<...
+    custom:JV_deadzone="10%"/>
+```
+
 Or better, if you just want a simple Joystick (and few other cool stuff) as a controller for your mobile app you can use the following related project ;)
 
 ## Demo
 For those who want more than just a snippet, here is the demo :
-- [Basic two joysticks ](https://github.com/controlwear/virtual-joystick-demo) (similar to screenshot)
+- [Basic two joysticks ](https://github.com/lukkass222/virtual-joystick-android/tree/master/joystickdemo_2) - [similar to screenshot](#image).
+- [Basic joystick ](https://github.com/lukkass222/virtual-joystick-android/tree/master/joystickdemo) - [similar to screenshot](#Rectangle).
 
-If you want to add your project here, go ahead :)
 
 ## Required
 Minimum API level is 16 (Android 4.1.x - Jelly Bean) which cover 99.5% of the Android platforms as of October 2018 according to the  <a href="https://developer.android.com/about/dashboards" class="user-mention">distribution dashboard</a>.
 
 ## Download
 ### Gradle
-```java
-compile 'io.github.controlwear:virtualjoystick:1.10.1'
+
+**Step 1.** Add the JitPack repository to your build file
+
+Add it in your root build.gradle at the end of repositories:
+
+```Gradle
+	dependencyResolutionManagement {
+		repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
+		repositories {
+			mavenCentral()
+			maven { url 'https://jitpack.io' }
+		}
+	}
+```
+
+**Step 2.** Add the dependency
+
+```Gradle
+dependencies {
+	        implementation 'com.github.lukkass222:virtual-joystick-android:1.13.5'
+	}
 ```
 
 ## Contributing
@@ -183,5 +210,27 @@ limitations under the License.
 
 **virtual-joystick-android** is an open source project created by <a href="https://github.com/makowildcat" class="user-mention">@makowildcat</a> (mostly spare time) and partially funded by [Black Artick](http://blackartick.com/) and [NSERC](http://www.nserc-crsng.gc.ca/index_eng.asp).
 
-Also, thanks to <a href="https://github.com/Bernix01" class="user-mention">Bernix01</a>, <a href="https://github.com/teancake" class="user-mention">teancake</a>, <a href="https://github.com/Spettacolo83" class="user-mention">Spettacolo83</a>, <a href="https://github.com/djjaysmith" class="user-mention">djjaysmith</a>, <a href="https://github.com/jaybkim1" class="user-mention">jaybkim1</a>, <a href="https://github.com/sikrinick" class="user-mention">sikrinick</a>, <a href="https://github.com/AlexandrDavydov" class="user-mention">AlexandrDavydov</a>, <a href="https://github.com/indrek-koue" class="user-mention">indrek-koue</a>, <a href="https://github.com/QitmentX7" class="user-mention">QitmentX7</a>, <a href="https://github.com/esplemea" class="user-mention">esplemea</a>, <a href="https://github.com/FenixGit" class="user-mention">FenixGit</a>, <a href="https://github.com/AlexanderShniperson" class="user-mention">AlexanderShniperson</a>
+Also, thanks to <a href="https://github.com/Bernix01" class="user-mention">Bernix01</a>,
+<a href="https://github.com/teancake" class="user-mention">teancake</a>,
+<a href="https://github.com/Spettacolo83" class="user-mention">Spettacolo83</a>,
+<a href="https://github.com/djjaysmith" class="user-mention">djjaysmith</a>,
+<a href="https://github.com/jaybkim1" class="user-mention">jaybkim1</a>,
+<a href="https://github.com/sikrinick" class="user-mention">sikrinick</a>,
+<a href="https://github.com/AlexandrDavydov" class="user-mention">AlexandrDavydov</a>,
+<a href="https://github.com/indrek-koue" class="user-mention">indrek-koue</a>,
+<a href="https://github.com/QitmentX7" class="user-mention">QitmentX7</a>,
+<a href="https://github.com/esplemea" class="user-mention">esplemea</a>,
+<a href="https://github.com/FenixGit" class="user-mention">FenixGit</a>,
+<a href="https://github.com/AlexanderShniperson" class="user-mention">AlexanderShniperson</a>
+, <a href="https://github.com/omarhemaia" class="user-mention">omarhemaia</a>,
+<a href="https://github.com/mstniy" class="user-mention">mstniy</a>
+<a href="https://github.com/Mathias-Boulay" class="user-mention">Mathias-Boulay</a>,
+<a href="https://github.com/osfunapps" class="user-mention">osfunapps</a>,
+<a href="https://github.com/eziosoft" class="user-mention">eziosoft</a>,
+<a href="https://github.com/scottbarnesg" class="user-mention">scottbarnesg</a>,
+<a href="https://github.com/tomerlevi444" class="user-mention">tomerlevi444</a>,
+<a href="https://github.com/BenDelGreco" class="user-mention">BenDelGreco</a>,
+<a href="https://github.com/dooully" class="user-mention">dooully</a>,
+<a href="https://github.com/jonyhunter" class="user-mention">jonyhunter</a>,
+<a href="https://github.com/lukkass222" class="user-mention">lukkass222</a> 
 and <a href="https://github.com/GijsGoudzwaard" class="user-mention">GijsGoudzwaard</a> for contributing.
